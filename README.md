@@ -131,3 +131,5 @@ La auditoría del 10 de noviembre de 2026 confirmó que `nova-ia-api` está prov
 **Fundación de almacenamiento aplicada. Memoria personal cifrada y conectada a Nova IA. El índice de la FK biométrica se añadió y verificó. Código de cifrado del SQLite operativo añadido y clave provisionada en Railway; el despliegue sigue bloqueado por permisos de la GitHub App. Integración biométrica Android, migración de archivos privados y protección contra contraseñas filtradas siguen pendientes.**
 
 Este estado debe actualizarse con commits y resultados de pruebas verificables, no con estimaciones.
+
+Las alternativas gratuitas sin tarjeta para CI/CD y hosting, con límites y plan de migración, están documentadas en [docs/FREE-NO-CARD-ALTERNATIVES.md](docs/FREE-NO-CARD-ALTERNATIVES.md).
