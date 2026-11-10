@@ -42,11 +42,20 @@ GitHub documenta que deben revisarse las anotaciones de ejecución, la facturaci
 
 **No cambiar los tests ni ocultar fallos con continue-on-error para simular un CI correcto.**
 
-## 2. CI alternativo: CircleCI conectado, ejecución pendiente de verificación
+## 2. CI alternativo: CircleCI Free — operativo y validado
 
-El propietario confirmó que conectó CircleCI con GitHub. Se corrigió una dependencia real del pipeline en `Cumba35/Nova-IA`: `backend/requirements-dev.txt` ahora incluye `PyYAML==6.0.3`, requerido por el paso que analiza `backend/compose.yaml`. El commit de esa corrección es `ee1eff859c8e2a78beac772d0ebc7429276778c0`; después se actualizó el documento de alternativas con commit `6b16e8de4efbdd7a417fdca8949c7156d7d6c55f`. GitHub registró un nuevo fallo de Actions para el primer commit: [run 42924647875](https://github.com/Cumba35/Nova-IA/actions/runs/42924647875).
+La integración CircleCI está conectada al repositorio privado y publicó un estado de commit verificable:
 
-La revisión del commit `ee1eff859c8e2a78beac772d0ebc7429276778c0` encontró un check de GitHub Actions (`Nova IA checks`) fallido, pero ningún check ni status publicado por CircleCI en ese commit (`total_count = 0` en GitHub commit statuses). El job de GitHub Actions terminó en dos segundos, con `runner_id = 0` y lista de pasos vacía; no llegó a ejecutar código. Esto no informa el resultado de CircleCI, pero sí demuestra que la conexión no ha sustituido ni reparado el workflow de GitHub Actions. No hay conector de CircleCI disponible en esta sesión para consultar sus pipelines, logs o resultados. CircleCI no se considera operativo hasta que una ejecución real aparezca y termine en verde. No ocultar fallos ni declarar pruebas aprobadas por la mera existencia del YAML.
+- Commit: `ef7328eae2def0dd45d458449b96fe5af3074092`.
+- Estado: `success`.
+- Contexto: `ci/circleci: backend-checks`.
+- Descripción de GitHub: `Your tests passed on CircleCI!`.
+- Fecha: 10 de noviembre de 2026, 23:48:05 UTC.
+- Ejecución: https://app.circleci.com/workflow/012d28ac-ee3b-4916-b572-abb07495c31a/job/9e10125d-d2fe-4e87-9910-9999b416d0c4.
+
+El pipeline ejecuta compilación de módulos Python, sintaxis del script de copias, parseo de Docker Compose, Bandit y pytest. La dependencia `PyYAML==6.0.3` está declarada en `backend/requirements-dev.txt`. Este resultado confirma que los pasos configurados terminaron correctamente para ese commit.
+
+GitHub Actions continúa siendo una vía independiente con fallos pre-runner observados en ejecuciones anteriores: no deben confundirse con CircleCI ni ocultarse. La ejecución de CircleCI aprobada no construyó ni publicó la imagen Docker, no desplegó Railway, no probó `/health` y no valida el cliente Android. Por tanto, el CI de backend está operativo; el despliegue y las pruebas integrales siguen pendientes.
 
 ## 3. Railway: API sin fuente ni despliegue
 
