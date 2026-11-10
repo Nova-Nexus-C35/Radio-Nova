@@ -66,6 +66,7 @@ Migraciones aplicadas en Supabase y versionadas aquí:
 - `20261110223651_nova_guard_biometric_consent_registry.sql`
 - `20261110223721_nova_guard_biometric_consent_hardening.sql`
 - `20261110223850_nova_guard_biometric_consent_document_hash.sql`
+- `20261110230000_nova_guard_biometric_consent_fk_index.sql`
 
 Cambios verificados:
 
@@ -87,7 +88,7 @@ Las funciones Edge `nova-memory` v12 y `nova-ia` v35 están activas, con JWT obl
 
 **Alcance del cifrado de memoria:** es cifrado en reposo mediante claves por propietario custodiadas por Supabase Vault; no es cifrado de extremo a extremo. Nova IA puede recibir el texto descifrado únicamente después de la autenticación y de comprobar los consentimientos del propietario. Supabase documenta Vault como una función en etapa alpha pública; debe mantenerse aislada detrás de estas RPCs y reevaluarse para una solución de gestión de claves de disponibilidad general.
 
-El backend FastAPI de Nova IA también incorpora cifrado AES-256-GCM para los campos de contenido de su SQLite operativo, con una clave dedicada en el gestor de secretos de Railway y el historial local desactivado por defecto. La variable secreta está configurada, pero el servicio Railway todavía no tiene acceso al repositorio privado conectado y, por tanto, no se ha desplegado esta versión. La conexión falló porque la aplicación GitHub de Railway no tiene permiso sobre `Cumba35/Nova-IA`; requiere autorización del propietario en GitHub.
+El backend FastAPI de Nova IA también incorpora cifrado AES-256-GCM para los campos de contenido de su SQLite operativo, con una clave dedicada en el gestor de secretos de Railway y el historial local desactivado por defecto. La variable secreta está configurada. El servicio Railway `nova-ia-api` existe en `Nova-IA/production`, conserva el volumen `/app/data` y tiene healthcheck `/health`, pero está Offline, no tiene despliegues y su fuente está desconectada. El intento de conectar `Cumba35/Nova-IA` desde Railway devolvió `User does not have access to the repo`; el propietario debe conceder a la GitHub App de Railway acceso al repositorio privado y resolver cualquier permiso pendiente antes de reintentar la conexión.
 
 Durante la inspección no había perfiles ni muestras biométricas, consentimientos biométricos ni objetos faciales guardados. El documento de consentimiento y el registro de base de datos ya están preparados; falta integrar el cliente Android para mostrar el consentimiento, registrar la aceptación, cifrar y subir los objetos y ejecutar la eliminación al revocar. El bucket nuevo y la tabla de metadatos están preparados, pero todavía falta integrar el cliente Android para cifrar y subir plantillas/muestras biométricas. No se debe afirmar que el reconocimiento facial o biométrico esté implementado.
 
@@ -99,8 +100,9 @@ Durante la inspección no había perfiles ni muestras biométricas, consentimien
 - [ ] Planificar la evolución desde cifrado en reposo de Supabase Vault hacia cifrado de extremo a extremo para memoria si se requiere que ni el servicio de base de datos pueda descifrarla.
 - [ ] Implementar en el cliente Android el flujo de consentimiento `nova-biometric-consent-v1`, el cifrado local, la subida de objetos y su eliminación al revocar, sin almacenar plantillas del sistema operativo.
 - [ ] Verificar aislamiento con dos identidades de prueba, incluidos intentos de lectura, escritura, actualización y borrado cruzados.
-- [ ] Activar la protección de Supabase Auth contra contraseñas filtradas. El asesor la detecta desactivada. El expediente actual del proyecto indica que Supabase está en el plan Free y que la protección nativa requiere Pro o superior; el mínimo de 12 caracteres de la app no sustituye la comprobación de contraseñas filtradas.
+- [ ] Activar la protección de Supabase Auth contra contraseñas filtradas tras habilitar un plan Pro o superior. El asesor la detecta desactivada; la función no está incluida en Free. El mínimo de 12 caracteres de la app no sustituye la comprobación de contraseñas filtradas.
 - [ ] Definir rotación de claves, recuperación, copias cifradas y pruebas de restauración.
+- [x] Añadir el índice faltante para `nova_guard_private_objects.biometric_consent_id`; el asesor ya no reporta claves foráneas sin índice en Nova Guard.
 - [ ] Ejecutar los asesores de seguridad y las pruebas end-to-end después de cada integración.
 
 ## Reglas obligatorias
@@ -118,6 +120,6 @@ Durante la inspección no había perfiles ni muestras biométricas, consentimien
 
 ## Estado
 
-**Fundación de almacenamiento aplicada. Memoria personal cifrada y conectada a Nova IA. Código de cifrado del SQLite operativo añadido y clave provisionada en Railway; despliegue bloqueado por permisos de GitHub. Integración biométrica, migración de archivos privados y endurecimiento de autenticación siguen pendientes.**
+**Fundación de almacenamiento aplicada. Memoria personal cifrada y conectada a Nova IA. El índice de la FK biométrica se añadió y verificó. Código de cifrado del SQLite operativo añadido y clave provisionada en Railway; el despliegue sigue bloqueado por permisos de la GitHub App. Integración biométrica Android, migración de archivos privados y protección contra contraseñas filtradas siguen pendientes.**
 
 Este estado debe actualizarse con commits y resultados de pruebas verificables, no con estimaciones.
