@@ -33,7 +33,7 @@ Un repositorio GitHub privado no equivale a una bóveda cifrada: commits, clones
 
 ### Identidad y biometría
 
-La versión de consentimiento `nova-biometric-consent-v1` está documentada en [docs/BIOMETRIC-CONSENT.md](docs/BIOMETRIC-CONSENT.md). El registro de consentimientos por finalidad está en `nova_guard_biometric_consents`; cada objeto biométrico requiere un consentimiento activo y un objeto cifrado ya subido. La revocación bloquea nuevas lecturas y marca los objetos como revocados; el cliente debe eliminar además los objetos físicos y las claves locales.
+La versión de consentimiento `nova-biometric-consent-v1` está documentada en [docs/BIOMETRIC-CONSENT.md](docs/BIOMETRIC-CONSENT.md). La base de datos exige el SHA-256 exacto de ese documento (`770b63acc8cb0a4c9042e3fddc229904ed1178b3c2f5e03b21253e4838cd0b05`). El registro de consentimientos por finalidad está en `nova_guard_biometric_consents`; cada objeto biométrico requiere un consentimiento activo y un objeto cifrado ya subido. La revocación bloquea nuevas lecturas y marca los objetos como revocados; el cliente debe eliminar además los objetos físicos y las claves locales.
 
 Los datos biométricos son de máxima sensibilidad. Su almacenamiento requiere consentimiento explícito y específico, cifrado en el dispositivo, acceso exclusivo del propietario, registro de operaciones y un mecanismo de revocación y eliminación.
 
@@ -65,6 +65,7 @@ Migraciones aplicadas en Supabase y versionadas aquí:
 - `20261110222732_nova_guard_memory_upsert_fix.sql`
 - `20261110223651_nova_guard_biometric_consent_registry.sql`
 - `20261110223721_nova_guard_biometric_consent_hardening.sql`
+- `20261110223850_nova_guard_biometric_consent_document_hash.sql`
 
 Cambios verificados:
 
