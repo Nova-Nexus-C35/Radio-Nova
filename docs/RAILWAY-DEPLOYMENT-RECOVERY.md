@@ -1,6 +1,6 @@
 # Recuperación del despliegue de Nova IA en Railway
 
-**Última comprobación:** 10 de noviembre de 2026  
+**Última comprobación:** 10 de noviembre de 2026 (revalidación tras conectar CircleCI)  
 **Proyecto Railway:** `Nova-IA`  
 **Entorno:** `production`  
 **Servicio:** `nova-ia-api`  
@@ -26,14 +26,14 @@ El intento de conectar la fuente con Railway para `Cumba35/Nova-IA` devuelve:
 
 `User does not have access to the repo`
 
-La conexión GitHub disponible en Railway no tiene acceso efectivo a ese repositorio privado, o tiene permisos pendientes/desactualizados. No se debe crear un segundo servicio ni publicar el repositorio para evitar este control.
+Se volvió a intentar conectar `Cumba35/Nova-IA` a la fuente del servicio existente desde la integración de Railway y el resultado volvió a ser `User does not have access to the repo`. La autorización de CircleCI es independiente y no concede permisos a Railway. No se debe crear un segundo servicio ni publicar el repositorio para evitar este control.
 
 ## Procedimiento de recuperación
 
 1. En GitHub, abrir Settings → Applications → Installed GitHub Apps.
 2. Abrir la instalación de Railway y seleccionar Configure.
 3. Si la instalación limita el acceso a repositorios seleccionados, incluir `Cumba35/Nova-IA`.
-4. Aprobar cualquier actualización pendiente de permisos de Railway.
+4. Aprobar cualquier actualización pendiente de permisos de Railway. La autorización de CircleCI no sustituye este paso.
 5. Confirmar que la cuenta GitHub vinculada a Railway tiene acceso de lectura al repositorio.
 6. En Railway, abrir el proyecto `Nova-IA`, servicio `nova-ia-api`, Settings → Source.
 7. Conectar `Cumba35/Nova-IA`, rama `main`. Mantener el directorio raíz `/backend`, Dockerfile `Dockerfile`, healthcheck `/health` y volumen `/app/data`.
@@ -42,6 +42,15 @@ La conexión GitHub disponible en Railway no tiene acceso efectivo a ese reposit
 10. Ejecutar las pruebas de almacenamiento cifrado, lectura/descifrado, fallo cerrado sin clave, persistencia tras reinicio y recuperación desde backup cifrado.
 
 Railway documenta que la aplicación GitHub debe tener acceso al repositorio y que las actualizaciones de permisos deben aceptarse antes de volver a conectar la fuente. Si el error persiste, se debe desconectar y reconectar el repositorio desde la configuración del servicio después de actualizar la instalación.
+
+## Revisión adicional del 10 de noviembre de 2026
+
+- El servicio `nova-ia-api` sigue sin fuente conectada, sin deployment y sin dominio público asignado.
+- Se confirmó que el volumen `nova-ia-persistent-data` continúa montado en `/app/data` (500 MB, región `iad`). No se ha borrado ni recreado.
+- Se volvió a intentar `connect_service_source` sobre el servicio existente con `Cumba35/Nova-IA`, rama `main`; Railway rechazó la operación por falta de acceso al repositorio.
+- No se desplegó nada ni se alteraron variables/secretos.
+- La lista actual de variables no incluye `NOVA_NOTIFY_SMTP_PASSWORD`; el correo SMTP no puede considerarse configurado. No añadir contraseñas al repositorio ni al chat.
+- CircleCI ya está conectado según confirmación del propietario, pero no hay una herramienta CircleCI disponible en esta sesión para inspeccionar su pipeline. El CI no se declara aprobado hasta obtener un resultado verde verificable.
 
 ## Criterios de aceptación
 
