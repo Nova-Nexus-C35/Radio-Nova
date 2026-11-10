@@ -58,6 +58,9 @@ Migraciones aplicadas en Supabase y versionadas aquí:
 
 - `20261110222244_nova_guard_private_storage_foundation.sql`
 - `20261110222306_nova_guard_private_vault_least_privilege.sql`
+- `20261110222558_nova_guard_encrypt_personal_memory.sql`
+- `20261110222633_nova_guard_isolate_memory_rpcs.sql`
+- `20261110222732_nova_guard_memory_upsert_fix.sql`
 
 Cambios verificados:
 
@@ -75,6 +78,8 @@ Los controles de RLS, permisos, bucket y políticas se consultaron después de a
 Las funciones Edge `nova-memory` v12 y `nova-ia` v35 están activas, con JWT obligatorio, y ya usan las RPCs cifradas. Sus fuentes se sincronizaron en Nova-Nexus. El asesor de seguridad ya no muestra la advertencia de funciones `SECURITY DEFINER` expuestas; queda la advertencia de contraseñas filtradas.
 
 **Alcance del cifrado de memoria:** es cifrado en reposo mediante claves por propietario custodiadas por Supabase Vault; no es cifrado de extremo a extremo. Nova IA puede recibir el texto descifrado únicamente después de la autenticación y de comprobar los consentimientos del propietario. Supabase documenta Vault como una función en etapa alpha pública; debe mantenerse aislada detrás de estas RPCs y reevaluarse para una solución de gestión de claves de disponibilidad general.
+
+El backend FastAPI de Nova IA también incorpora cifrado AES-256-GCM para los campos de contenido de su SQLite operativo, con una clave dedicada en el gestor de secretos de Railway y el historial local desactivado por defecto. La variable secreta está configurada, pero el servicio Railway todavía no tiene acceso al repositorio privado conectado y, por tanto, no se ha desplegado esta versión. La conexión falló porque la aplicación GitHub de Railway no tiene permiso sobre `Cumba35/Nova-IA`; requiere autorización del propietario en GitHub.
 
 Durante la inspección no había perfiles ni muestras biométricas ni objetos faciales guardados. El bucket nuevo y la tabla de metadatos están preparados, pero todavía falta integrar el cliente Android para cifrar y subir plantillas/muestras biométricas. No se debe afirmar que el reconocimiento facial o biométrico esté implementado.
 
@@ -105,6 +110,6 @@ Durante la inspección no había perfiles ni muestras biométricas ni objetos fa
 
 ## Estado
 
-**Fundación de almacenamiento aplicada. Memoria personal cifrada y conectada a Nova IA. Integración del cliente biométrico, migración de archivos privados, endurecimiento de la autenticación y revisión del almacenamiento SQLite local de Nova IA aún pendientes.**
+**Fundación de almacenamiento aplicada. Memoria personal cifrada y conectada a Nova IA. Código de cifrado del SQLite operativo añadido y clave provisionada en Railway; despliegue bloqueado por permisos de GitHub. Integración biométrica, migración de archivos privados y endurecimiento de autenticación siguen pendientes.**
 
 Este estado debe actualizarse con commits y resultados de pruebas verificables, no con estimaciones.
