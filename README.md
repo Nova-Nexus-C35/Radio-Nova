@@ -66,7 +66,7 @@ Migraciones aplicadas en Supabase y versionadas aquí:
 - `20261110223651_nova_guard_biometric_consent_registry.sql`
 - `20261110223721_nova_guard_biometric_consent_hardening.sql`
 - `20261110223850_nova_guard_biometric_consent_document_hash.sql`
-- `20261110230000_nova_guard_biometric_consent_fk_index.sql`
+- `20261110225225_nova_guard_biometric_consent_fk_index.sql`
 
 Cambios verificados:
 
