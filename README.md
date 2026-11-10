@@ -118,6 +118,10 @@ Durante la inspección no había perfiles ni muestras biométricas, consentimien
 9. Toda modificación de seguridad debe incluir migración versionada, pruebas y verificación posterior.
 10. Nunca declarar una función como activa o segura basándose únicamente en que existe su tabla, bucket, endpoint o documentación.
 
+## Despliegue de Nova IA en Railway
+
+La auditoría del 10 de noviembre de 2026 confirmó que `nova-ia-api` está provisionado con raíz `/backend`, Dockerfile, healthcheck `/health`, volumen `/app/data` y secreto `NOVA_SQLITE_ENCRYPTION_KEY`, pero `source = null`, no tiene despliegues y permanece Offline. La conexión con `Cumba35/Nova-IA` falla con `User does not have access to the repo`. El procedimiento y los criterios de aceptación están en [docs/RAILWAY-DEPLOYMENT-RECOVERY.md](docs/RAILWAY-DEPLOYMENT-RECOVERY.md). No declarar el despliegue completado hasta verificar un deployment `SUCCESS`, servicio `ONLINE` y pruebas funcionales.
+
 ## Estado
 
 **Fundación de almacenamiento aplicada. Memoria personal cifrada y conectada a Nova IA. El índice de la FK biométrica se añadió y verificó. Código de cifrado del SQLite operativo añadido y clave provisionada en Railway; el despliegue sigue bloqueado por permisos de la GitHub App. Integración biométrica Android, migración de archivos privados y protección contra contraseñas filtradas siguen pendientes.**
