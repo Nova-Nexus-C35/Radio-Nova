@@ -33,6 +33,8 @@ Un repositorio GitHub privado no equivale a una bóveda cifrada: commits, clones
 
 ### Identidad y biometría
 
+La versión de consentimiento `nova-biometric-consent-v1` está documentada en [docs/BIOMETRIC-CONSENT.md](docs/BIOMETRIC-CONSENT.md). El registro de consentimientos por finalidad está en `nova_guard_biometric_consents`; cada objeto biométrico requiere un consentimiento activo y un objeto cifrado ya subido. La revocación bloquea nuevas lecturas y marca los objetos como revocados; el cliente debe eliminar además los objetos físicos y las claves locales.
+
 Los datos biométricos son de máxima sensibilidad. Su almacenamiento requiere consentimiento explícito y específico, cifrado en el dispositivo, acceso exclusivo del propietario, registro de operaciones y un mecanismo de revocación y eliminación.
 
 La autenticación biométrica nativa del dispositivo debe limitarse a confirmar la presencia/autorización local del propietario. No se debe extraer ni copiar la plantilla biométrica del sistema. Si el propietario crea una plantilla o muestra biométrica propia para una función específica de Nova, se conserva únicamente como ciphertext en el almacenamiento privado y se separa de las fotografías de perfil.
@@ -61,6 +63,8 @@ Migraciones aplicadas en Supabase y versionadas aquí:
 - `20261110222558_nova_guard_encrypt_personal_memory.sql`
 - `20261110222633_nova_guard_isolate_memory_rpcs.sql`
 - `20261110222732_nova_guard_memory_upsert_fix.sql`
+- `20261110223651_nova_guard_biometric_consent_registry.sql`
+- `20261110223721_nova_guard_biometric_consent_hardening.sql`
 
 Cambios verificados:
 
@@ -72,6 +76,9 @@ Cambios verificados:
 6. Eliminación de privilegios heredados innecesarios y concesión exclusiva de SELECT, INSERT, UPDATE y DELETE donde corresponde.
 7. Eliminación del acceso directo de administradores autenticados a los perfiles y muestras biométricas del propietario; las operaciones de backend deben comprobar autorización y quedar auditadas.
 8. Restricción del bucket heredado `nova-face-images` al propietario.
+9. Registro de consentimiento biométrico por finalidad, con historial de revocación inmutable para el cliente.
+10. Restricción de registro de objetos biométricos a consentimiento activo y a objetos cifrados previamente subidos.
+11. Las lecturas del bucket privado requieren metadatos activos; los objetos biométricos además requieren consentimiento no revocado.
 
 Los controles de RLS, permisos, bucket y políticas se consultaron después de aplicar las migraciones. Los cuatro registros existentes de memoria personal se cifraron en la base de datos; se verificó que los cuatro pueden descifrarse mediante la clave privada y que no queda acceso directo a la tabla para los roles cliente. Una prueba de escritura/lectura/borrado mediante RPC con el rol autenticado terminó correctamente y se revirtió para no dejar datos de prueba.
 
@@ -81,7 +88,7 @@ Las funciones Edge `nova-memory` v12 y `nova-ia` v35 están activas, con JWT obl
 
 El backend FastAPI de Nova IA también incorpora cifrado AES-256-GCM para los campos de contenido de su SQLite operativo, con una clave dedicada en el gestor de secretos de Railway y el historial local desactivado por defecto. La variable secreta está configurada, pero el servicio Railway todavía no tiene acceso al repositorio privado conectado y, por tanto, no se ha desplegado esta versión. La conexión falló porque la aplicación GitHub de Railway no tiene permiso sobre `Cumba35/Nova-IA`; requiere autorización del propietario en GitHub.
 
-Durante la inspección no había perfiles ni muestras biométricas ni objetos faciales guardados. El bucket nuevo y la tabla de metadatos están preparados, pero todavía falta integrar el cliente Android para cifrar y subir plantillas/muestras biométricas. No se debe afirmar que el reconocimiento facial o biométrico esté implementado.
+Durante la inspección no había perfiles ni muestras biométricas, consentimientos biométricos ni objetos faciales guardados. El documento de consentimiento y el registro de base de datos ya están preparados; falta integrar el cliente Android para mostrar el consentimiento, registrar la aceptación, cifrar y subir los objetos y ejecutar la eliminación al revocar. El bucket nuevo y la tabla de metadatos están preparados, pero todavía falta integrar el cliente Android para cifrar y subir plantillas/muestras biométricas. No se debe afirmar que el reconocimiento facial o biométrico esté implementado.
 
 ## Pendientes críticos antes de declarar la migración completa
 
@@ -89,7 +96,7 @@ Durante la inspección no había perfiles ni muestras biométricas ni objetos fa
 - [ ] Conectar Nova IA y los clientes Android al bucket `nova-guard-private` y a `nova_guard_private_objects`.
 - [x] Cifrar la memoria personal existente y adaptar `nova-memory` y `nova-ia` para escribir/leer mediante RPCs autenticadas.
 - [ ] Planificar la evolución desde cifrado en reposo de Supabase Vault hacia cifrado de extremo a extremo para memoria si se requiere que ni el servicio de base de datos pueda descifrarla.
-- [ ] Implementar en el cliente Android el registro biométrico cifrado, la revocación del consentimiento y la eliminación de objetos, sin almacenar plantillas del sistema operativo.
+- [ ] Implementar en el cliente Android el flujo de consentimiento `nova-biometric-consent-v1`, el cifrado local, la subida de objetos y su eliminación al revocar, sin almacenar plantillas del sistema operativo.
 - [ ] Verificar aislamiento con dos identidades de prueba, incluidos intentos de lectura, escritura, actualización y borrado cruzados.
 - [ ] Activar la protección de Supabase Auth contra contraseñas filtradas. El asesor la detecta desactivada. El expediente actual del proyecto indica que Supabase está en el plan Free y que la protección nativa requiere Pro o superior; el mínimo de 12 caracteres de la app no sustituye la comprobación de contraseñas filtradas.
 - [ ] Definir rotación de claves, recuperación, copias cifradas y pruebas de restauración.
