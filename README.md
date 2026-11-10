@@ -70,17 +70,23 @@ Cambios verificados:
 7. Eliminación del acceso directo de administradores autenticados a los perfiles y muestras biométricas del propietario; las operaciones de backend deben comprobar autorización y quedar auditadas.
 8. Restricción del bucket heredado `nova-face-images` al propietario.
 
-Los controles de RLS, permisos, bucket y políticas se consultaron después de aplicar las migraciones. Los registros biométricos y objetos de los buckets faciales y de memoria estaban vacíos durante la inspección.
+Los controles de RLS, permisos, bucket y políticas se consultaron después de aplicar las migraciones. Los cuatro registros existentes de memoria personal se cifraron en la base de datos; se verificó que los cuatro pueden descifrarse mediante la clave privada y que no queda acceso directo a la tabla para los roles cliente. Una prueba de escritura/lectura/borrado mediante RPC con el rol autenticado terminó correctamente y se revirtió para no dejar datos de prueba.
+
+Las funciones Edge `nova-memory` v12 y `nova-ia` v35 están activas, con JWT obligatorio, y ya usan las RPCs cifradas. Sus fuentes se sincronizaron en Nova-Nexus. El asesor de seguridad ya no muestra la advertencia de funciones `SECURITY DEFINER` expuestas; queda la advertencia de contraseñas filtradas.
+
+**Alcance del cifrado de memoria:** es cifrado en reposo mediante claves por propietario custodiadas por Supabase Vault; no es cifrado de extremo a extremo. Nova IA puede recibir el texto descifrado únicamente después de la autenticación y de comprobar los consentimientos del propietario. Supabase documenta Vault como una función en etapa alpha pública; debe mantenerse aislada detrás de estas RPCs y reevaluarse para una solución de gestión de claves de disponibilidad general.
+
+Durante la inspección no había perfiles ni muestras biométricas ni objetos faciales guardados. El bucket nuevo y la tabla de metadatos están preparados, pero todavía falta integrar el cliente Android para cifrar y subir plantillas/muestras biométricas. No se debe afirmar que el reconocimiento facial o biométrico esté implementado.
 
 ## Pendientes críticos antes de declarar la migración completa
 
 - [ ] Crear el flujo de inicialización y recuperación de claves del propietario en los clientes, sin enviar la clave maestra al servidor.
 - [ ] Conectar Nova IA y los clientes Android al bucket `nova-guard-private` y a `nova_guard_private_objects`.
-- [ ] Migrar la memoria actual, que todavía se encuentra en `nova_user_memory_items` en formato de texto, a un formato cifrado compatible con el cliente y con el consentimiento vigente. No borrar el origen hasta verificar descifrado y recuperación.
-- [ ] Revisar y adaptar `nova-memory` y `nova-ia` para no crear nuevos datos privados en claro durante la transición.
-- [ ] Implementar el registro biométrico cifrado, la revocación del consentimiento y la eliminación de objetos, sin almacenar plantillas del sistema operativo.
+- [x] Cifrar la memoria personal existente y adaptar `nova-memory` y `nova-ia` para escribir/leer mediante RPCs autenticadas.
+- [ ] Planificar la evolución desde cifrado en reposo de Supabase Vault hacia cifrado de extremo a extremo para memoria si se requiere que ni el servicio de base de datos pueda descifrarla.
+- [ ] Implementar en el cliente Android el registro biométrico cifrado, la revocación del consentimiento y la eliminación de objetos, sin almacenar plantillas del sistema operativo.
 - [ ] Verificar aislamiento con dos identidades de prueba, incluidos intentos de lectura, escritura, actualización y borrado cruzados.
-- [ ] Activar la protección de Supabase Auth contra contraseñas filtradas. El asesor de seguridad la detectó desactivada; todavía no está habilitada.
+- [ ] Activar la protección de Supabase Auth contra contraseñas filtradas. El asesor la detecta desactivada. El expediente actual del proyecto indica que Supabase está en el plan Free y que la protección nativa requiere Pro o superior; el mínimo de 12 caracteres de la app no sustituye la comprobación de contraseñas filtradas.
 - [ ] Definir rotación de claves, recuperación, copias cifradas y pruebas de restauración.
 - [ ] Ejecutar los asesores de seguridad y las pruebas end-to-end después de cada integración.
 
@@ -99,6 +105,6 @@ Los controles de RLS, permisos, bucket y políticas se consultaron después de a
 
 ## Estado
 
-**Fundación de almacenamiento y controles de base de datos aplicada. Integración de clientes, migración de memoria en claro, cifrado biométrico y endurecimiento completo de autenticación aún pendientes.**
+**Fundación de almacenamiento aplicada. Memoria personal cifrada y conectada a Nova IA. Integración del cliente biométrico, migración de archivos privados, endurecimiento de la autenticación y revisión del almacenamiento SQLite local de Nova IA aún pendientes.**
 
 Este estado debe actualizarse con commits y resultados de pruebas verificables, no con estimaciones.
