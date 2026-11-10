@@ -44,7 +44,7 @@ GitHub documenta que deben revisarse las anotaciones de ejecución, la facturaci
 
 ## 2. CI alternativo: CircleCI Free — operativo y validado
 
-La integración CircleCI está conectada al repositorio privado y publicó un estado de commit verificable:
+La integración CircleCI está conectada al repositorio privado y publicó estados de commit verificables. El commit más reciente de configuración `3b1a91ce2c5cfa9fc0a8ef9cdbcf9ea7c11883c9` terminó con ambos trabajos en verde:
 
 - Commit: `ef7328eae2def0dd45d458449b96fe5af3074092`.
 - Estado: `success`.
