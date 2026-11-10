@@ -81,6 +81,12 @@ El intento inicial y un nuevo intento de conectar el repositorio privado devolvi
 
 No crear un servicio paralelo ni hacer público el repositorio para evitar el permiso de GitHub App.
 
+### Ruta alternativa de despliegue desde CircleCI
+
+Se añadió un trabajo `railway-deploy` al pipeline CircleCI de Nova IA. El trabajo utiliza Railway CLI y un Project Token guardado como secreto `RAILWAY_TOKEN` en CircleCI, de modo que no requiere conceder a Railway GitHub App acceso al repositorio privado. Solo se ejecuta con el parámetro explícito `deploy_railway=true`, en la rama `main`, después de que las pruebas `backend-checks` terminen correctamente. No crea un servicio nuevo.
+
+Pendiente: el propietario debe crear un Project Token de Railway, guardarlo en CircleCI → Project Settings → Environment Variables y activar el parámetro al iniciar un pipeline. El parámetro está desactivado por defecto. Después se debe comprobar deployment SUCCESS, ONLINE y /health.
+
 ## 4. Correo de independencia de Nova IA
 
 La configuración de Railway contiene las variables SMTP de host, puerto, usuario, remitente y destinatario. En la inspección de nombres de variables no aparece NOVA_NOTIFY_SMTP_PASSWORD.
