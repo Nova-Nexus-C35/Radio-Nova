@@ -1,6 +1,6 @@
 # Recuperación del despliegue de Nova IA en Railway
 
-**Última comprobación:** 10 de noviembre de 2026 (revalidación tras conectar CircleCI)  
+**Última comprobación:** 10 de noviembre de 2026 (CircleCI validado; Railway aún sin despliegue)  
 **Proyecto Railway:** `Nova-IA`  
 **Entorno:** `production`  
 **Servicio:** `nova-ia-api`  
@@ -50,7 +50,7 @@ Railway documenta que la aplicación GitHub debe tener acceso al repositorio y q
 - Se volvió a intentar `connect_service_source` sobre el servicio existente con `Cumba35/Nova-IA`, rama `main`; Railway rechazó la operación por falta de acceso al repositorio.
 - No se desplegó nada ni se alteraron variables/secretos.
 - La lista actual de variables no incluye `NOVA_NOTIFY_SMTP_PASSWORD`; el correo SMTP no puede considerarse configurado. No añadir contraseñas al repositorio ni al chat.
-- CircleCI ya está conectado según confirmación del propietario, pero no hay una herramienta CircleCI disponible en esta sesión para inspeccionar su pipeline. El CI no se declara aprobado hasta obtener un resultado verde verificable.
+- CircleCI publicó un estado `SUCCESS` verificable en GitHub para el commit `ef7328eae2def0dd45d458449b96fe5af3074092`, contexto `ci/circleci: backend-checks`, el 10 de noviembre de 2026 a las 23:48:05 UTC. Ejecución: https://app.circleci.com/workflow/012d28ac-ee3b-4916-b572-abb07495c31a/job/9e10125d-d2fe-4e87-9910-9999b416d0c4. Esto valida el pipeline de comprobaciones, no un build/deploy de producción. Railway continúa sin fuente, despliegues ni dominio.
 
 ## Criterios de aceptación
 
