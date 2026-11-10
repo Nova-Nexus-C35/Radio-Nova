@@ -42,18 +42,24 @@ GitHub documenta que deben revisarse las anotaciones de ejecución, la facturaci
 
 **No cambiar los tests ni ocultar fallos con continue-on-error para simular un CI correcto.**
 
-## 2. Railway: API sin fuente ni despliegue
+## 2. CI alternativo: CircleCI conectado, ejecución pendiente de verificación
 
-La inspección directa del proyecto Nova-IA, entorno production, servicio nova-ia-api, confirmó:
+El propietario confirmó que conectó CircleCI con GitHub. Se corrigió una dependencia real del pipeline en `Cumba35/Nova-IA`: `backend/requirements-dev.txt` ahora incluye `PyYAML==6.0.3`, requerido por el paso que analiza `backend/compose.yaml`. El commit de esa corrección es `ee1eff859c8e2a78beac772d0ebc7429276778c0`; después se actualizó el documento de alternativas con commit `6b16e8de4efbdd7a417fdca8949c7156d7d6c55f`.
 
-- Estado offline; sin despliegues activos ni historial de despliegues.
+No hay conector de CircleCI disponible en esta sesión para consultar pipelines, logs o resultados. El commit debería activar el pipeline si la integración quedó habilitada, pero CircleCI no se considera operativo hasta que una ejecución real termine en verde. No ocultar fallos ni declarar pruebas aprobadas por la mera existencia del YAML.
+
+## 3. Railway: API sin fuente ni despliegue
+
+La inspección directa más reciente del proyecto Nova-IA, entorno production, servicio nova-ia-api, confirmó:
+
+- El recurso de servicio existe, pero no tiene deployment actual ni historial de despliegues. No hay dominio público asociado.
 - Fuente desconectada (source = null).
 - Directorio raíz /backend, builder Dockerfile y ruta Dockerfile.
 - Healthcheck /health.
 - Volumen persistente montado en /app/data.
 - La variable NOVA_SQLITE_ENCRYPTION_KEY está provisionada; su valor nunca debe leerse ni copiarse.
 
-El intento de conectar el repositorio privado devolvió User does not have access to the repo.
+El intento inicial y un nuevo intento de conectar el repositorio privado devolvieron `User does not have access to the repo`. La autorización de CircleCI no otorga permisos a Railway; son integraciones GitHub Apps independientes.
 
 ### Recuperación requerida
 
@@ -66,7 +72,7 @@ El intento de conectar el repositorio privado devolvió User does not have acces
 
 No crear un servicio paralelo ni hacer público el repositorio para evitar el permiso de GitHub App.
 
-## 3. Correo de independencia de Nova IA
+## 4. Correo de independencia de Nova IA
 
 La configuración de Railway contiene las variables SMTP de host, puerto, usuario, remitente y destinatario. En la inspección de nombres de variables no aparece NOVA_NOTIFY_SMTP_PASSWORD.
 
@@ -74,7 +80,7 @@ Sin esa contraseña de aplicación SMTP, el envío de correo no puede considerar
 
 No registrar el valor del secreto ni incluirlo en logs.
 
-## 4. Biometría Android y almacenamiento privado
+## 5. Biometría Android y almacenamiento privado
 
 El registro de consentimiento y las políticas de Supabase están preparados, pero la integración de extremo a extremo en Android no está terminada ni probada.
 
@@ -90,7 +96,17 @@ Criterios obligatorios para completar:
 
 No afirmar que el reconocimiento facial, la autenticación biométrica remota o la bóveda de muestras está implementada hasta completar estas pruebas.
 
-## 5. Límites externos que requieren decisión del propietario
+## 6. Supabase y límites externos que requieren decisión del propietario
+
+Auditoría de lectura realizada el 10 de noviembre de 2026 en `Nova-Nexus`:
+
+- Ninguna tabla del esquema `public` devuelta por el catálogo consultado aparece con RLS desactivado.
+- El bucket `nova-guard-private` existe y es privado, con límite de 50 MiB y tipo permitido `application/octet-stream`.
+- `nova_guard_private_objects` tiene políticas SELECT/INSERT/UPDATE/DELETE restringidas por `owner_user_id = auth.uid()`; UPDATE incluye `WITH CHECK` para impedir reasignación de propietario.
+- El advisor de seguridad devuelve una advertencia: protección de contraseñas filtradas desactivada. La opción requiere el plan Supabase Pro o superior según la configuración observada; no actualizar ni gastar sin autorización.
+- El advisor de rendimiento devuelve índices aún no usados; no eliminarlos automáticamente porque pueden ser necesarios cuando aumente el tráfico.
+
+Estas verificaciones son estáticas/read-only. No prueban aislamiento real entre dos cuentas, carga/descarga cifrada, revocación, ni backup/restore.
 
 - Supabase Auth leaked-password protection está desactivada y requiere un plan Pro o superior según la configuración comprobada. No actualizar el plan ni incurrir en gastos sin autorización.
 - El backend FastAPI sigue siendo una plataforma en desarrollo. El token único del propietario no sustituye autenticación multiusuario, sesiones seguras ni rate limiting.
