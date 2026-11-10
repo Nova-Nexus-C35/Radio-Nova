@@ -44,9 +44,9 @@ GitHub documenta que deben revisarse las anotaciones de ejecución, la facturaci
 
 ## 2. CI alternativo: CircleCI conectado, ejecución pendiente de verificación
 
-El propietario confirmó que conectó CircleCI con GitHub. Se corrigió una dependencia real del pipeline en `Cumba35/Nova-IA`: `backend/requirements-dev.txt` ahora incluye `PyYAML==6.0.3`, requerido por el paso que analiza `backend/compose.yaml`. El commit de esa corrección es `ee1eff859c8e2a78beac772d0ebc7429276778c0`; después se actualizó el documento de alternativas con commit `6b16e8de4efbdd7a417fdca8949c7156d7d6c55f`.
+El propietario confirmó que conectó CircleCI con GitHub. Se corrigió una dependencia real del pipeline en `Cumba35/Nova-IA`: `backend/requirements-dev.txt` ahora incluye `PyYAML==6.0.3`, requerido por el paso que analiza `backend/compose.yaml`. El commit de esa corrección es `ee1eff859c8e2a78beac772d0ebc7429276778c0`; después se actualizó el documento de alternativas con commit `6b16e8de4efbdd7a417fdca8949c7156d7d6c55f`. GitHub registró un nuevo fallo de Actions para el primer commit: [run 42924647875](https://github.com/Cumba35/Nova-IA/actions/runs/42924647875).
 
-No hay conector de CircleCI disponible en esta sesión para consultar pipelines, logs o resultados. El commit debería activar el pipeline si la integración quedó habilitada, pero CircleCI no se considera operativo hasta que una ejecución real termine en verde. No ocultar fallos ni declarar pruebas aprobadas por la mera existencia del YAML.
+La revisión del commit `ee1eff859c8e2a78beac772d0ebc7429276778c0` encontró un check de GitHub Actions (`Nova IA checks`) fallido, pero ningún check ni status publicado por CircleCI en ese commit (`total_count = 0` en GitHub commit statuses). El job de GitHub Actions terminó en dos segundos, con `runner_id = 0` y lista de pasos vacía; no llegó a ejecutar código. Esto no informa el resultado de CircleCI, pero sí demuestra que la conexión no ha sustituido ni reparado el workflow de GitHub Actions. No hay conector de CircleCI disponible en esta sesión para consultar sus pipelines, logs o resultados. CircleCI no se considera operativo hasta que una ejecución real aparezca y termine en verde. No ocultar fallos ni declarar pruebas aprobadas por la mera existencia del YAML.
 
 ## 3. Railway: API sin fuente ni despliegue
 
