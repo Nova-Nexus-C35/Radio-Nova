@@ -93,6 +93,14 @@ Se implementó `backend/nova_ia/dropbox_storage.py` con OAuth refresh, restaurac
 
 Las pruebas unitarias del adaptador se añadieron a `backend/tests/test_dropbox_storage.py`; el commit `f767950e12e5b9a5202205c9804a6befe8cfdd76` obtuvo CircleCI backend-checks y railway-deploy en verde. Se añadió luego cobertura de carga por sesión grande en `b315ae1c18ef9c003e088e4a6a23e8a826c11ecc`; esa ejecución está pendiente de resultado en la última consulta. No se ha probado la cuenta Dropbox real porque Railway aún no contiene `DROPBOX_APP_KEY`, `DROPBOX_APP_SECRET` ni `DROPBOX_REFRESH_TOKEN`. La conexión Dropbox de ChatGPT no sustituye el OAuth propio del backend.
 
+### Trainer aislado y control de datos
+
+Se añadió el endpoint de exportación `/internal/training/dataset`, con token dedicado `NOVA_TRAINING_EXPORT_TOKEN`. La exportación contiene solo material aprobado de currículo y repositorios públicos; el API descifra y filtra los registros. El trainer ya no consulta SQLite directamente ni recibe la clave de cifrado o el token de propietario. El contenedor copia el paquete `nova_ia`, comparte únicamente el volumen de modelos y puede respaldar adaptadores LoRA en Dropbox.
+
+El API restaura un nuevo adaptador desde Dropbox cada 300 segundos por defecto y verifica que corresponda a la misma revisión del modelo base. El endpoint de estado distingue entre entrenamiento solicitado y entrenamiento activo: sin un worker verificado, `automatic_model_weight_updates` permanece falso.
+
+En Railway falta crear el segundo servicio `nova-model-trainer`, configurar `NOVA_TRAINING_EXPORT_TOKEN` en API y trainer, el URL privado del endpoint y Dropbox OAuth. No se creó el servicio porque requiere recursos adicionales. En Compose local el perfil `model-training` está preparado y desactivado por defecto.
+
 ## 4. Correo de independencia de Nova IA
 
 La configuración de Railway contiene las variables SMTP de host, puerto, usuario, remitente y destinatario. En la inspección de nombres de variables no aparece NOVA_NOTIFY_SMTP_PASSWORD.
