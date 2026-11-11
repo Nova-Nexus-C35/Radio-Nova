@@ -157,3 +157,17 @@ Cada bloqueo se cierra solo con evidencia de ejecución: runner asignado y tests
 - La ruta de despliegue desde CircleCI requiere `RAILWAY_TOKEN` como secreto de proyecto en CircleCI. No guardar ni solicitar el valor en el repositorio o chat.
 - Dropbox OAuth no está provisionado en Railway; no hay evidencia de que el modelo esté almacenado en la cuenta `novanexus.gestion@gmail.com`. El código de Dropbox/LoRA no equivale a una conexión activa.
 - El portal público contiene un micrositio informativo Nova IA en `https://cumba35.github.io/Web-Publica-Nova/nova-ia/`; no publicar `web-admin/` ni anunciar backend activo.
+
+
+## Revalidación y almacenamiento Dropbox — 11 de noviembre de 2026
+
+- Se creó en la cuenta Dropbox autorizada `novanexus.gestion@gmail.com` la estructura de archivo del proyecto:
+  - `/Proyectos/Nova-IA/models`
+  - `/Proyectos/Nova-IA/adapters`
+  - `/Proyectos/Nova-IA/training`
+  - `/Proyectos/Nova-IA/backups`
+- Esta estructura es el archivo visible del proyecto. No equivale a OAuth de backend: la app Dropbox de Nova IA debe autorizar el mismo usuario y tener un alcance compatible con la ruta configurada. Si se usa App Folder, su raíz aislada no puede leer `/Proyectos`; mantener `NOVA_MODEL_DROPBOX_PATH=/models` dentro de esa App Folder o elegir Full Dropbox con el mínimo de scopes necesarios. No cambiar la ruta de producción hasta confirmar el tipo de acceso de la app.
+- Railway sigue sin deployment ni dominio y el servicio `nova-ia-api` está OFFLINE. La lista actual de variables no contiene `DROPBOX_APP_KEY`, `DROPBOX_APP_SECRET` ni `DROPBOX_REFRESH_TOKEN`; no se han inventado ni sustituido por credenciales del conector ChatGPT.
+- Se dividieron los checks de Nova IA en pasos independientes para identificar el fallo exacto: commit `7a99fb9b9acbf08b82d8b038ab446b771e6950b5`. La ejecución resultante debe revisarse antes de declarar CI aprobado.
+- CircleCI sigue siendo una ruta alternativa de despliegue, pero necesita `RAILWAY_TOKEN` añadido como variable secreta desde CircleCI. No registrar ni solicitar ese secreto por chat.
+- El modelo base fijado es Qwen2.5-0.5B-Instruct en formato safetensors; su archivo de pesos supera el volumen Railway de 500 MB. Antes de cargarlo hay que elegir almacenamiento persistente con capacidad suficiente o una variante cuantizada compatible, y probar el runtime nativo. No descargarlo en el volumen actual.
