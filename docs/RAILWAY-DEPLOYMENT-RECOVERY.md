@@ -64,12 +64,24 @@ Railway documenta que la aplicación GitHub debe tener acceso al repositorio y q
 - La lista actual de variables no incluye `NOVA_NOTIFY_SMTP_PASSWORD`; el correo SMTP no puede considerarse configurado. No añadir contraseñas al repositorio ni al chat.
 - CircleCI publicó un estado `SUCCESS` verificable para `backend-checks` en el commit `ef7328eae2def0dd45d458449b96fe5af3074092`, contexto `ci/circleci: backend-checks`, el 10 de noviembre de 2026 a las 23:48:05 UTC. Ejecución: https://app.circleci.com/workflow/012d28ac-ee3b-4916-b572-abb07495c31a/job/9e10125d-d2fe-4e87-9910-9999b416d0c4. Se añadió después el trabajo opcional `railway-deploy` para desplegar mediante Project Token. El commit `3b1a91ce2c5cfa9fc0a8ef9cdbcf9ea7c11883c9` terminó con `backend-checks` y `railway-deploy` en `success`; el segundo trabajo fue un no-op porque el parámetro `deploy_railway` estaba desactivado. Aún falta que el propietario guarde `RAILWAY_TOKEN` en CircleCI y solicite el despliegue real. Esto no equivale a un build/deploy de producción. Railway continúa sin fuente, despliegues ni dominio.
 
+## Nueva integración de almacenamiento del modelo (10–11 de noviembre de 2026)
+
+Se añadió al repositorio privado Nova IA `backend/nova_ia/dropbox_storage.py` y su integración en `backend/training/bootstrap_model.py`. Dropbox se usa como caché durable primaria del modelo SafeTensors fijado; S3 queda como respaldo. La integración usa OAuth refresh y sesiones de carga para archivos grandes, valida el manifiesto/licencia/SHA-256 antes de activar el modelo y no registra tokens.
+
+La ruta predeterminada está limitada a la carpeta de aplicación Dropbox `/models` (App Folder), con scopes mínimos `files.content.read`, `files.content.write` y `files.metadata.read`. La conexión Dropbox de ChatGPT no se reutiliza como token de Railway.
+
+**Pendiente de configuración en Railway:** `DROPBOX_APP_KEY`, `DROPBOX_APP_SECRET` y `DROPBOX_REFRESH_TOKEN`. La lista de variables del servicio no contiene esos tres valores. El adaptador está implementado, pero no se ha podido probar una carga/restauración real ni confirmar que el modelo esté almacenado en Dropbox. Tras configurar los secretos, activar `NOVA_BOOTSTRAP_MODEL_ON_START=true` y verificar el primer arranque.
+
+También se añadió `scripts/build_android.sh`, `docs/ANDROID-BUILD.md` y descarga CMake reproducible de llama.cpp. El build Android no se ha ejecutado; el pipeline CircleCI actual no incluye una tarea Android. No presentar el APK como compilado o probado.
+
 ## Criterios de aceptación
 
 - [ ] La fuente del servicio muestra `Cumba35/Nova-IA` y `main`.
 - [ ] El primer despliegue termina en `SUCCESS`.
 - [ ] El servicio queda `ONLINE`.
+- [ ] Dropbox OAuth App Folder está autorizada y el modelo puede restaurarse/subirse con verificación SHA-256.
 - [ ] `/health` responde correctamente.
+- [ ] El script Android genera un APK y las pruebas JVM/native terminan correctamente.
 - [ ] El backend rechaza el arranque si falta `NOVA_SQLITE_ENCRYPTION_KEY`.
 - [ ] La base SQLite no contiene en claro los campos privados cifrados.
 - [ ] El volumen conserva los datos después de un redeploy.
