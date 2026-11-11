@@ -148,3 +148,12 @@ Estas verificaciones son estáticas/read-only. No prueban aislamiento real entre
 ## Criterio de cierre
 
 Cada bloqueo se cierra solo con evidencia de ejecución: runner asignado y tests verdes; deployment exitoso y API saludable; correo real recibido; consentimiento y revocación comprobados; aislamiento multiusuario y restauración probados. Los permisos, planes, credenciales y gastos que dependan del propietario no se deben simular ni eludir.
+
+
+## Revalidación 11 de noviembre de 2026
+
+- `Cumba35/Nova-IA/main` permanece en `a14f24091548ef13a4da75416ecae05aa83a913f`; CircleCI `backend-checks` reporta failure y el job no expone su failure report mediante GitHub. Informe requerido: `circleci run get 4993dfc4-f9df-4b50-bed7-966933861f30 --failure-report`.
+- Railway `nova-ia-api` está OFFLINE, sin deployments ni dominio. La conexión directa de `Cumba35/Nova-IA:main` vuelve a ser rechazada por permisos de la GitHub App: `User does not have access to the repo`.
+- La ruta de despliegue desde CircleCI requiere `RAILWAY_TOKEN` como secreto de proyecto en CircleCI. No guardar ni solicitar el valor en el repositorio o chat.
+- Dropbox OAuth no está provisionado en Railway; no hay evidencia de que el modelo esté almacenado en la cuenta `novanexus.gestion@gmail.com`. El código de Dropbox/LoRA no equivale a una conexión activa.
+- El portal público contiene un micrositio informativo Nova IA en `https://cumba35.github.io/Web-Publica-Nova/nova-ia/`; no publicar `web-admin/` ni anunciar backend activo.
