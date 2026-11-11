@@ -74,6 +74,14 @@ La ruta predeterminada está limitada a la carpeta de aplicación Dropbox `/mode
 
 También se añadió `scripts/build_android.sh`, `docs/ANDROID-BUILD.md` y descarga CMake reproducible de llama.cpp. El build Android no se ha ejecutado; el pipeline CircleCI actual no incluye una tarea Android. No presentar el APK como compilado o probado.
 
+## Entrenamiento automático: arquitectura segura preparada, worker aún no desplegado
+
+El backend ahora expone `GET /internal/training/dataset`, protegido por `NOVA_TRAINING_EXPORT_TOKEN` independiente de `NOVA_OWNER_TOKEN`. Solo exporta ejemplos aprobados de `nova-curriculum` y repositorios públicos, descifrados dentro del API y filtrados antes de salir. El contenedor trainer no monta SQLite ni recibe `NOVA_SQLITE_ENCRYPTION_KEY` ni el token de propietario.
+
+Se corrigió `Dockerfile.training` para copiar `nova_ia` y se actualizó Compose: el trainer separado puede acceder al API por la red interna, comparte solo `nova-models` y usa Dropbox para guardar los adaptadores LoRA. El API sincroniza adaptadores verificados cada 300 segundos por defecto. El estado del API ya no afirma que los cambios automáticos de pesos estén activos sin un worker comprobado.
+
+**Pendiente en Railway:** crear un segundo servicio `nova-model-trainer` con `Dockerfile.training`, configurar `NOVA_TRAINING_EXPORT_TOKEN` en ambos servicios, `NOVA_TRAINING_DATA_URL` con el dominio privado del API y los secretos Dropbox. No se ha creado porque consume recursos adicionales y aún falta autorización de despliegue. No pasar al trainer el token de propietario ni la clave SQLite.
+
 ## Criterios de aceptación
 
 - [ ] La fuente del servicio muestra `Cumba35/Nova-IA` y `main`.
