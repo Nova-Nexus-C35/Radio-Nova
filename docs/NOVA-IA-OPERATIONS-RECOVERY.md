@@ -93,6 +93,10 @@ Se implementó `backend/nova_ia/dropbox_storage.py` con OAuth refresh, restaurac
 
 Las pruebas unitarias del adaptador se añadieron a `backend/tests/test_dropbox_storage.py`; el commit `f767950e12e5b9a5202205c9804a6befe8cfdd76` obtuvo CircleCI backend-checks y railway-deploy en verde. Se añadió luego cobertura de carga por sesión grande en `b315ae1c18ef9c003e088e4a6a23e8a826c11ecc`; esa ejecución está pendiente de resultado en la última consulta. No se ha probado la cuenta Dropbox real porque Railway aún no contiene `DROPBOX_APP_KEY`, `DROPBOX_APP_SECRET` ni `DROPBOX_REFRESH_TOKEN`. La conexión Dropbox de ChatGPT no sustituye el OAuth propio del backend.
 
+### Estado CI posterior a los cambios de Dropbox/trainer
+
+El último pipeline CircleCI aprobado de backend fue el commit `f767950e12e5b9a5202205c9804a6befe8cfdd76`. La nueva revisión `591f304c753807b2eefef48abdc9b229ebfe0f0c` falló en `ci/circleci: backend-checks` el 11 de noviembre de 2026. El estado de GitHub no expone el detalle del error. CircleCI indica este comando para obtenerlo: `circleci run get c9b8c268-16f1-4d80-99e9-ebec8fc6884c --failure-report`. La corrección del separador NDJSON ya está guardada, pero no se puede marcar el pipeline actual como verde hasta conocer y corregir el fallo restante.
+
 ### Trainer aislado y control de datos
 
 Se añadió el endpoint de exportación `/internal/training/dataset`, con token dedicado `NOVA_TRAINING_EXPORT_TOKEN`. La exportación contiene solo material aprobado de currículo y repositorios públicos; el API descifra y filtra los registros. El trainer ya no consulta SQLite directamente ni recibe la clave de cifrado o el token de propietario. El contenedor copia el paquete `nova_ia`, comparte únicamente el volumen de modelos y puede respaldar adaptadores LoRA en Dropbox.
