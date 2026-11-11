@@ -55,7 +55,7 @@ La integración CircleCI está conectada al repositorio privado y publicó estad
 
 El pipeline ejecuta compilación de módulos Python, sintaxis del script de copias, parseo de Docker Compose, Bandit y pytest. La dependencia `PyYAML==6.0.3` está declarada en `backend/requirements-dev.txt`. Este resultado confirma que los pasos configurados terminaron correctamente para ese commit.
 
-GitHub Actions continúa siendo una vía independiente con fallos pre-runner observados en ejecuciones anteriores: no deben confundirse con CircleCI ni ocultarse. La ejecución de CircleCI aprobada no construyó ni publicó la imagen Docker, no desplegó Railway, no probó `/health` y no valida el cliente Android. Por tanto, el CI de backend está operativo; el despliegue y las pruebas integrales siguen pendientes.
+GitHub Actions continúa siendo una vía independiente con fallos pre-runner observados en ejecuciones anteriores: no deben confundirse con CircleCI ni ocultarse. La ejecución de CircleCI aprobada no construyó ni publicó la imagen Docker, no desplegó Railway, no probó `/health` y no valida el cliente Android. El repositorio ahora contiene `scripts/build_android.sh` y `docs/ANDROID-BUILD.md`, además de una descarga CMake fijada de llama.cpp; el pipeline CircleCI todavía no contiene una tarea Android y el script no se ha ejecutado. Por tanto, el CI de backend está operativo, pero Android, despliegue y pruebas integrales siguen pendientes.
 
 ## 3. Railway: API sin fuente ni despliegue
 
@@ -87,11 +87,17 @@ Se añadió un trabajo `railway-deploy` al pipeline CircleCI de Nova IA. El trab
 
 Pendiente: el propietario debe crear un Project Token de Railway, guardarlo en CircleCI → Project Settings → Environment Variables y activar el parámetro al iniciar un pipeline. El parámetro está desactivado por defecto. Después se debe comprobar deployment SUCCESS, ONLINE y /health.
 
+### Almacenamiento del modelo en Dropbox
+
+Se implementó `backend/nova_ia/dropbox_storage.py` con OAuth refresh, restauración de snapshot y cargas por sesiones para archivos grandes. `backend/training/bootstrap_model.py` prioriza Dropbox, usa S3 como respaldo y finalmente puede descargar la revisión fijada desde Hugging Face. Solo activa el modelo tras comprobar manifiesto, licencia Apache-2.0 y SHA-256. El path por defecto es `/models` dentro de una Dropbox App Folder con scopes mínimos `files.content.read`, `files.content.write`, `files.metadata.read`.
+
+Las pruebas unitarias del adaptador se añadieron a `backend/tests/test_dropbox_storage.py`; el commit `f767950e12e5b9a5202205c9804a6befe8cfdd76` obtuvo CircleCI backend-checks y railway-deploy en verde. Se añadió luego cobertura de carga por sesión grande en `b315ae1c18ef9c003e088e4a6a23e8a826c11ecc`; esa ejecución está pendiente de resultado en la última consulta. No se ha probado la cuenta Dropbox real porque Railway aún no contiene `DROPBOX_APP_KEY`, `DROPBOX_APP_SECRET` ni `DROPBOX_REFRESH_TOKEN`. La conexión Dropbox de ChatGPT no sustituye el OAuth propio del backend.
+
 ## 4. Correo de independencia de Nova IA
 
 La configuración de Railway contiene las variables SMTP de host, puerto, usuario, remitente y destinatario. En la inspección de nombres de variables no aparece NOVA_NOTIFY_SMTP_PASSWORD.
 
-Sin esa contraseña de aplicación SMTP, el envío de correo no puede considerarse operativo. El secreto debe añadirse directamente en Railway → Variables, nunca en GitHub, código fuente, documentación o chat. Después de añadirlo, desplegar y probar un correo real al destinatario configurado; comprobar también el estado de reintento si SMTP no está disponible.
+Sin esa contraseña de aplicación SMTP, el envío de correo no puede considerarse operativo. El adaptador Dropbox tampoco puede realizar operaciones reales hasta provisionar los tres secretos OAuth indicados en la sección anterior. El secreto debe añadirse directamente en Railway → Variables, nunca en GitHub, código fuente, documentación o chat. Después de añadirlo, desplegar y probar un correo real al destinatario configurado; comprobar también el estado de reintento si SMTP no está disponible.
 
 No registrar el valor del secreto ni incluirlo en logs.
 
