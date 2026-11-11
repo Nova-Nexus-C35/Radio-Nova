@@ -171,3 +171,12 @@ Cada bloqueo se cierra solo con evidencia de ejecución: runner asignado y tests
 - Se dividieron los checks de Nova IA en pasos independientes para identificar el fallo exacto: commit `7a99fb9b9acbf08b82d8b038ab446b771e6950b5`. La ejecución resultante debe revisarse antes de declarar CI aprobado.
 - CircleCI sigue siendo una ruta alternativa de despliegue, pero necesita `RAILWAY_TOKEN` añadido como variable secreta desde CircleCI. No registrar ni solicitar ese secreto por chat.
 - El modelo base fijado es Qwen2.5-0.5B-Instruct en formato safetensors; su archivo de pesos supera el volumen Railway de 500 MB. Antes de cargarlo hay que elegir almacenamiento persistente con capacidad suficiente o una variante cuantizada compatible, y probar el runtime nativo. No descargarlo en el volumen actual.
+
+
+## Auditoría complementaria de infraestructura — 11 de noviembre de 2026
+
+- Supabase `Nova-Nexus` está `ACTIVE_HEALTHY` (PostgreSQL 17). Se inspeccionaron 90 tablas entre esquemas `public` y `private`: las 90 tienen RLS habilitado. Hay 9 buckets; los buckets de Nova Guard, memoria, capítulos y proyectos permanecen privados. No se modificaron políticas ni datos.
+- El único aviso del Security Advisor es `Leaked Password Protection Disabled`. Requiere revisión/activación desde la configuración de Auth y puede depender del plan; no se cambió el plan ni se debilitó la autenticación.
+- Hay 9 Edge Functions activas; la función `nova-ia` está activa con JWT requerido. `nova-publish-catalog` tiene JWT del gateway desactivado, pero el código inspeccionado exige un token propio `NOVA_WORKSPACE_WRITE_TOKEN` antes de usar el service role. No se modificó esta función.
+- Los workflows recientes de CI en los repositorios privados Nova IA, Nova Apps y Nova Novels terminan en fallo inmediatamente, sin pasos registrados; el conector no pudo recuperar los logs (GitHub devolvió BlobNotFound). Por ello, no se atribuye el fallo a una línea de código concreta. La siguiente vía diagnóstica es revisar Actions en la interfaz GitHub o ejecutar los checks desde un runner con acceso autorizado.
+- El workflow de Nova Novels se documentó como exportación estática privada, no como publicación automática en GitHub Pages. La biblioteca pública WordPress se mantiene como fuente activa.
