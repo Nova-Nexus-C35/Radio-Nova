@@ -13,7 +13,7 @@ Las tablas se ubicarán en el esquema privado `private`, sin acceso directo desd
 
 ### `nova_module_publishers`
 - `publisher_id` (PK, ID opaco y estable).
-- `public_key_base64` (solo clave pública Ed25519; nunca clave privada).
+- `public_key_base64` (clave pública Ed25519 en DER SubjectPublicKeyInfo, codificada en Base64; nunca clave privada).
 - `algorithm` (actualmente Ed25519).
 - `status` (active/revoked), `created_at`, `revoked_at`.
 - La rotación añade una nueva clave/versionado; no sobrescribe silenciosamente la clave anterior.
@@ -41,7 +41,7 @@ Las tablas se ubicarán en el esquema privado `private`, sin acceso directo desd
 - RLS habilitado y FORCE RLS en todas las tablas privadas.
 - Revocar privilegios de `PUBLIC`, `anon` y `authenticated`; conceder acceso de datos solo al rol de servidor `service_role` desde Edge Functions.
 - Los clientes Android/web nunca reciben la clave `service_role`.
-- Las Edge Functions exigen JWT cuando operan en nombre de usuario y verifican rol/ownership desde datos confiables del servidor, nunca desde `user_metadata`.
+- Las Edge Functions exigen JWT cuando operan en nombre de usuario y verifican rol/ownership desde datos confiables del servidor, nunca desde `user_metadata`. El backend NOVA IA consume únicamente la clave pública DER en Base64; el formato de firma canónica se comparte con el runtime Java 17.
 - Las operaciones administrativas de publicación exigen rol verificado por backend, aprobación y auditoría.
 - El bucket `nova-modules` será privado; clientes no obtienen enlaces públicos permanentes. Descargas autenticadas con URL firmada de corta duración después de autorización.
 
