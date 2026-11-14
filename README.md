@@ -133,3 +133,8 @@ La auditoría del 10 de noviembre de 2026 confirmó que `nova-ia-api` está prov
 Este estado debe actualizarse con commits y resultados de pruebas verificables, no con estimaciones.
 
 Las alternativas gratuitas sin tarjeta para CI/CD y hosting, con límites y plan de migración, están documentadas en [docs/FREE-NO-CARD-ALTERNATIVES.md](docs/FREE-NO-CARD-ALTERNATIVES.md).
+
+
+## NOVA Module Registry
+
+La política y el modelo de datos para publicadores confiables, catálogo firmado, permisos y auditoría de módulos están en [docs/MODULE-REGISTRY-ARCHITECTURE.md](docs/MODULE-REGISTRY-ARCHITECTURE.md). Es un diseño pendiente de migración y despliegue; no se han creado tablas ni servicios de producción.
