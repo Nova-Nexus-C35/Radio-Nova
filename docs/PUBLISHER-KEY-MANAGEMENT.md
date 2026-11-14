@@ -75,9 +75,9 @@ publisher key remains active.
 ## Deployment gate
 
 The RPC migration is `supabase/staging/nova-module-key-atomic-operations.sql`.
-It must be applied to NOVA-STAGING before deploying the matching Edge Function branch.
-The migration and Edge Function change are currently committed to the PR branch but
-have not been deployed. Do not apply this staging SQL to production.
+It was applied to NOVA-STAGING on 2026-11-14, and the matching Edge Function version 4
+is deployed with `verify_jwt=true`. Positive authenticated account tests and concurrency
+checks remain pending. Do not apply this staging SQL to production.
 
 ## Explicitly not enabled yet
 
