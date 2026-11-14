@@ -1,107 +1,60 @@
 # NOVA Module Registry — seguridad y datos
 
-Estado: base inicial implementada en el proyecto aislado NOVA-STAGING; la ampliación de publicación, permisos y artefactos sigue pendiente. No desplegado en producción.  
+Estado: base de registro de claves implementada en NOVA-STAGING; publicación de módulos y autorización de artefactos siguen pendientes. Producción no se ha modificado.
 Autoridad: Nova Guard.
 
-## Objetivo
+## Objetivo y límites
 
-Centralizar la confianza de publicadores, el catálogo firmado, las autorizaciones remotas y la auditoría del ciclo de vida de módulos NOVA. Los módulos instalados y sus datos de usuario siguen siendo propiedad del dispositivo/módulo; este registro solo guarda metadatos y referencias de artefactos.
+Centralizar la confianza de publicadores y, por fases, el catálogo, permisos y auditoría de módulos NOVA. El registro conserva metadatos y referencias; no ejecuta código descargado ni sustituye la verificación local.
 
-## Modelo de datos propuesto
+## Modelo de datos en NOVA-STAGING
 
-Las tablas se ubicarán en el esquema privado `private`, sin acceso directo desde Data API:
+El esquema privado `private` contiene cuatro tablas:
+- `nova_module_publishers`: publicador, ID de clave, propietario autenticado, clave pública Ed25519 DER/SPKI, estado active/revoked y relación de rotación.
+- `nova_module_registry`: metadatos/manifest, versión, hash, firma, ruta privada de artefacto, estado y revisión.
+- `nova_module_user_grants`: permisos por usuario y versión exacta.
+- `nova_module_audit`: actor, acción, resultado, fecha y metadatos técnicos permitidos.
 
-### `nova_module_publishers`
-- `publisher_id` (ID opaco y estable del publicador) y `publisher_key_id` (ID único de cada clave; coincide con `artifact.publisherKeyId` del manifiesto).
-- `owner_user_id` y `created_by` para vincular el publicador a una cuenta autenticada; la propiedad no se deduce de metadatos editables del perfil.
-- `public_key_base64` (clave pública Ed25519 DER SubjectPublicKeyInfo en Base64; nunca clave privada).
-- `algorithm` (actualmente Ed25519), `status` (active/revoked), `created_at`, `revoked_at`, `supersedes_key_id`.
-- Rotar crea una nueva fila/ID de clave y conserva la anterior para verificar firmas históricas y auditar; no se sobrescribe silenciosamente.
+RLS y FORCE RLS están habilitados. Los privilegios directos de PUBLIC, anon y authenticated están revocados; la Edge Function usa service_role exclusivamente en servidor. El bucket `nova-modules` es privado y limita objetos a 64 MiB.
 
-### `nova_module_registry`
-- `module_id`, `version` (clave única).
-- `manifest` JSONB validado contra el contrato versionado del Workspace.
-- `execution_mode` (local/remote/hybrid).
-- `artifact_sha256`, `signature_base64`, `publisher_id`.
-- `artifact_storage_path` dentro del bucket privado `nova-modules`; nunca una URL pública permanente.
-- `created_by`, `reviewed_by`, `reviewed_at`, `published_at`, `revoked_at` y motivo de revisión/revocación.
-- `status` (draft/review/published/revoked), timestamps.
-- Nunca guardar código de módulo en filas JSON ni URL pública sin firma.
+## Acciones implementadas
 
-### `nova_module_user_grants`
-- `owner_user_id`, `module_id`, `version`.
-- Permisos aprobados, estado, `granted_by`, `granted_at`, `expires_at`, `revoked_at` y motivo de revocación.
-- Una concesión identifica una versión concreta; una nueva versión no hereda permisos nuevos automáticamente.
-- Revocar debe impedir nuevas descargas/invocaciones remotas inmediatamente; las sesiones/cachés locales deben respetar expiración corta y consultar revocación.
+La Edge Function `nova-module-registry` está activa en NOVA-STAGING con `verify_jwt=true`. Las acciones disponibles son:
+- `catalog.list`: devuelve únicamente módulos publicados y con clave activa.
+- `publisher.register`: registra una clave pública Ed25519 vinculada al usuario autenticado.
+- `publisher.keys.list`: lista solo las claves del propietario autenticado.
+- `publisher.rotate`: registra una clave nueva y revoca la anterior, con compensación si no se confirma la revocación.
+- `publisher.revoke`: revoca una clave activa que pertenece al usuario.
 
-### `nova_module_audit`
-- Actor, rol verificado, módulo/versión, acción, resultado, fecha, identificador de solicitud y metadatos técnicos permitidos.
-- No registrar tokens, claves, payloads privados, URLs firmadas, contenido del usuario ni datos personales innecesarios.
+La autenticación se valida contra Supabase Auth. Nunca se aceptan roles desde `user_metadata` ni se exponen claves privadas o service_role.
 
-## Límites de acceso
+## Integración NOVA IA
 
-- RLS habilitado y FORCE RLS en todas las tablas privadas.
-- Revocar privilegios de `PUBLIC`, `anon` y `authenticated`; conceder acceso de datos solo al rol de servidor `service_role` desde Edge Functions.
-- Los clientes Android/web nunca reciben la clave `service_role`.
-- Las Edge Functions exigen JWT cuando operan en nombre de usuario y verifican rol/ownership desde datos confiables del servidor, nunca desde `user_metadata`. El backend NOVA IA consume únicamente la clave pública DER en Base64; el formato de firma canónica se comparte con el runtime Java 17.
-- Las operaciones administrativas de publicación exigen rol verificado por backend, aprobación y auditoría.
-- El bucket `nova-modules` será privado; clientes no obtienen enlaces públicos permanentes. Descargas autenticadas con URL firmada de corta duración después de autorización.
+NOVA IA PR draft #44 ya contiene la consulta request-scoped a `publisher.keys.list`: toma el JWT Supabase de la solicitud, lo reenvía a Nova Guard y no lo persiste. La rama de Nova Guard descrita aquí no debe considerarse desplegada solo porque exista una Edge Function de staging; la versión desplegada y la rama del PR son estados distintos.
 
-## Contrato de API y permisos de servidor
+La integración entre sesión real, NOVA IA y Nova Guard todavía no ha pasado una prueba E2E. Los fallos actuales de GitHub Actions no muestran pasos ejecutados ni logs, por lo que no validan ni invalidan el código.
 
-- La identidad del publicador y los roles administrativos se verifican con Supabase Auth y tablas de roles confiables consultadas en servidor. No se aceptan roles desde `user_metadata`, parámetros del cliente ni claims no verificados.
-- Las tablas `private.*` no se exponen a Data API ni reciben grants para `PUBLIC`, `anon` o `authenticated`. RLS y FORCE RLS se mantienen como defensa adicional.
-- Si el Edge Function necesita RPC, se usa un esquema API dedicado y funciones `SECURITY INVOKER`; el permiso EXECUTE se concede solo a `service_role`, revocándolo expresamente a `PUBLIC`, `anon` y `authenticated`. No se introduce una función `SECURITY DEFINER` pública para saltarse RLS.
-- Acciones mínimas: `catalog.list`, `publisher.register`, `publisher.rotate`, `publisher.revoke`, `module.submit`, `module.review`, `module.publish`, `module.revoke`, `grant.request`, `grant.approve`, `grant.revoke`, `artifact.upload-url` y `artifact.download-url`.
-- El catálogo público devuelve únicamente metadatos de módulos `published`; no incluye rutas privadas ni enlaces de descarga.
-- La descarga requiere JWT válido, módulo publicado, publicador activo y concesión vigente para la versión/permisos solicitados. La URL firmada es de vida corta; su caducidad limita el intervalo de exposición tras una revocación.
-- Las operaciones administrativas y de permisos se auditan en la misma transacción que el cambio de estado.
+## Riesgos y trabajo bloqueante antes de publicar
 
-## Firma y publicación
+- La rotación actual usa varias peticiones REST (insertar nueva clave y revocar la anterior); no es una única transacción de base de datos. La compensación reduce el riesgo, pero concurrencia o fallo de red pueden requerir reconciliación manual. Antes de depender de rotaciones en producción, mover la operación a una RPC transaccional y probar carreras.
+- La escritura de auditoría se intenta después de la operación de clave y registra un error de servidor si falla; no comparte una transacción atómica con el cambio. Si la auditoría debe ser obligatoria, integrar escritura y mutación en la misma RPC/transacción.
+- No hay fuente protegida de roles administrativos ni acciones activas de submit/review/publish/revoke de módulos.
+- No están implementadas la autorización de grants por versión ni las URLs firmadas de subida/descarga.
+- Debe verificarse el vector de firma canónica Ed25519 de extremo a extremo entre Java, Python y TypeScript.
+- Faltan pruebas autenticadas con dos usuarios y dos publicadores, clave revocada, expiración de sesión, carreras de rotación, auditoría fallida, hash/firma alterados y permisos cruzados.
 
-1. El publicador firma el manifiesto canónico y el SHA-256 del artefacto con su clave privada fuera de Git.
-2. Nova Guard conserva únicamente la clave pública de confianza y su estado de revocación.
-3. El backend verifica hash, firma, estado del publicador, compatibilidad, licencias y permisos.
-4. Solo el estado `published` se expone al catálogo.
-5. Revocar un publicador bloquea nuevas instalaciones y actualizaciones; se conserva el registro de auditoría.
-6. Los clientes verifican otra vez firma/hash antes de instalar, aunque el backend ya haya validado.
+## Seguridad de publicación
 
-## Separación de datos existente
+La clave privada de firma permanece con el publicador y nunca se sube al registro. El backend y cada cliente deben verificar hash y firma antes de instalar. La activación local no ejecuta código descargado. Solo los módulos con estado published y publicador activo deben aparecer en el catálogo.
 
-La inspección de Nova-Nexus encontró 91 tablas en `public` y `private`, todas con RLS habilitado. No se moverán masivamente tablas existentes ni se creará una base por módulo sin mapa de consumidores y pruebas. La primera fase mantiene las tablas de cuentas, identidad, memoria, banco y auditoría donde están; los módulos nuevos usan namespaces y APIs. La separación física solo se considera si hay una justificación de aislamiento, escala o ciclo de vida.
+## Despliegue y separación
 
-## Despliegue por etapas
+NOVA-STAGING es un proyecto Supabase independiente. El SQL en `supabase/staging/` es una referencia de bootstrap, no una migración CLI para producción. No aplicar ese archivo directamente en producción. Cualquier ampliación requiere migración revisada, pruebas aisladas, backup y plan de rollback. No mover tablas existentes de Nova Nexus ni crear bases separadas por módulo sin mapa de consumidores y pruebas.
 
-1. Revisar este modelo y el contrato de manifiesto.
-2. Crear migración mediante Supabase CLI en un entorno de desarrollo/staging.
-3. Aplicar RLS, grants, bucket privado y pruebas de acceso cruzado.
-4. Implementar Edge Functions de catálogo, publicación, grants y descarga.
-5. Probar con dos usuarios y dos publicadores de prueba; verificar revocación.
-6. Ejecutar pruebas con dos usuarios, publicador revocado, permisos insuficientes, versiones incompatibles, hash alterado y URL expirada.
-7. Desplegar a producción solo tras backup, aprobación de seguridad y rollback probado.
+## Estado — 14 nov 2026
 
-## Estado
-
-## Estado real de NOVA-STAGING — 14 nov 2026
-
-- Proyecto Supabase independiente `NOVA-STAGING`; producción no se modificó.
-- Esquema privado con cuatro tablas de registro/auditoría, RLS y FORCE RLS; acceso directo de `anon`, `authenticated` y `public` revocado. Las operaciones de servidor usan `service_role` únicamente dentro de la Edge Function.
-- Bucket `nova-modules` privado, con límite de 64 MiB.
-- Edge Function `nova-module-registry` desplegada y `ACTIVE` (versión 3), con `verify_jwt=true`.
-- Acciones implementadas: `catalog.list`, `publisher.register`, `publisher.keys.list`, `publisher.rotate` y `publisher.revoke`.
-- Las pruebas autenticadas end-to-end con dos usuarios/publicadores reales siguen pendientes. CI no ha ejecutado pasos verificables en los PR relacionados.
-- Pendiente: fuente protegida de roles administrativos; envío, revisión, publicación y revocación de módulos; grants por versión; autorización de artefactos y URLs firmadas de corta duración; pruebas de revocación, aislamiento y expiración.
-- No se aplicaron migraciones adicionales ni cambios en producción.
-
-El runtime compartido de verificación de manifiestos/Ed25519 se está preparando en `Cumba35/Nova-Nexus`, PR draft #16. Ese código verifica el contrato y la firma, pero aún no consulta este registro persistente.
-
-La base inicial ya se aplicó en NOVA-STAGING. El SQL versionado en `supabase/staging/` sirve como referencia de bootstrap y no debe tratarse como una migración CLI lista para aplicar en producción. Cualquier ampliación debe generarse y revisarse con Supabase CLI en staging; no se aplicará DDL directamente a producción.
-
-
-## Implementación de verificación preparada — 14 nov 2026
-
-- Nova Nexus PR draft #16 incorpora un verificador TypeScript compartido: valida el manifiesto, calcula SHA-256, verifica firma Ed25519 con clave DER/SPKI y rechaza publicadores revocados. Incluye un vector de firma común con Java/Python.
-- NOVA IA PR #44 incorpora al almacén local de confianza el estado explícito `active/revoked`; una clave revocada bloquea nuevas instalaciones. La configuración sigue siendo estática por entorno y no sustituye al registro central dinámico.
-- Nova Workspace PR #11 mantiene el runtime Java 17 con validación del manifiesto, verificación del artefacto y permisos locales; no ejecuta el código del paquete.
-- CI no ha proporcionado logs ni pasos ejecutados para verificar estas ramas. Ninguna de estas funciones se declara validada.
-- La inspección de Supabase el 14 nov 2026 confirmó que aún no existen tablas `nova_module_*`, bucket `nova-modules` ni Edge Function `nova-module-registry`. La migración y API siguen pendientes; no se ha modificado producción.
+- NOVA-STAGING: cuatro tablas privadas, RLS + FORCE RLS, bucket privado de 64 MiB y Edge Function activa (versión desplegada 3, JWT obligatorio).
+- Código de la rama Nova Guard: cinco acciones de catálogo/gestión de claves; la rama modificada no se ha desplegado automáticamente.
+- NOVA IA PR #44: integración request-scoped escrita; E2E pendiente.
+- GitHub Actions: jobs fallan antes de mostrar pasos; no hay CI verificable.
+- Producción: intacta; no se han fusionado PR ni desplegado cambios de estas ramas.
