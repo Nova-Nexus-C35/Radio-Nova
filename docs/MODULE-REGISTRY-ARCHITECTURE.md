@@ -30,7 +30,7 @@ Las RPC `nova_register_publisher_key`, `nova_rotate_publisher_key` y `nova_revok
 
 El registro inicial usa un advisory transaction lock por publisher ID para evitar dos registros iniciales concurrentes. Rotación y revocación bloquean la fila activa con `SELECT ... FOR UPDATE`. La escritura de auditoría de éxito ocurre dentro de la misma transacción que la mutación: si la auditoría falla, toda la operación se revierte. Los intentos denegados se registran aparte y no cambian claves.
 
-La migración y el código Edge Function se aplicaron/desplegaron en NOVA-STAGING el 14 nov 2026. Se verificaron las tres firmas RPC, permisos de ejecución exclusivos de `service_role`, ausencia de permisos para `anon`/`authenticated`, y el caso de rotación de clave inexistente sin cambios en las tablas. Aún faltan pruebas positivas autenticadas y de concurrencia con cuentas reales.
+La migración y el código Edge Function se aplicaron/desplegaron en NOVA-STAGING el 14 nov 2026. Se verificaron las tres firmas RPC, permisos de ejecución exclusivos de `service_role`, ausencia de permisos para `anon`/`authenticated`, y el caso de rotación de clave inexistente sin cambios en las tablas. Se ejecutó una prueba SQL transaccional aislada: registro, rotación y revocación exitosos; se provocó un fallo de auditoría con trigger temporal y se verificó que la nueva clave no persistió y la anterior siguió activa. La prueba completa terminó con ROLLBACK y se confirmó que no quedaron usuarios, claves, auditorías ni funciones temporales. Aún faltan pruebas E2E con sesiones reales y concurrencia simultánea.
 
 La autenticación se valida contra Supabase Auth. Nunca se aceptan roles desde `user_metadata` ni se exponen claves privadas o service_role.
 
@@ -46,7 +46,7 @@ La integración entre sesión real, NOVA IA y Nova Guard todavía no ha pasado u
 - No existe aún una fuente protegida de roles administrativos ni acciones activas de submit/review/publish/revoke de módulos.
 - No están implementadas la autorización de grants por versión ni las URLs firmadas de subida/descarga.
 - Debe verificarse el vector de firma canónica Ed25519 de extremo a extremo entre Java, Python y TypeScript.
-- Faltan pruebas autenticadas con dos usuarios y dos publicadores, clave revocada, expiración de sesión, carreras de rotación, auditoría fallida, hash/firma alterados y permisos cruzados.
+- Faltan pruebas autenticadas con dos usuarios y dos publicadores, clave revocada, expiración de sesión, carreras de rotación simultáneas, hash/firma alterados y permisos cruzados. El rollback por fallo de auditoría ya se probó dentro de una transacción SQL temporal.
 - Los intentos denegados se auditan en una llamada separada; la atomicidad obligatoria aplica a los eventos de éxito asociados a cambios de clave.
 
 ## Seguridad de publicación
