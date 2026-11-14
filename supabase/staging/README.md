@@ -22,3 +22,31 @@ The SQL files in this folder are staging-specific references, not production mig
 
 No secret keys, signing private keys, user records, or production data belong in this repository.
 Publisher key management does not grant module publication privileges. Admin review/publish/revoke, artifact upload/download authorization, and authenticated end-to-end tests remain gated until a verified administrator/role source and the shared Ed25519 canonicalization contract are integrated.
+
+## Authenticated E2E harness
+
+A reusable, non-production test harness is available at
+`scripts/staging/nova-module-registry-e2e.ts`. It exercises the deployed Edge
+Function using two distinct NOVA-STAGING user sessions and generated Ed25519
+public keys. It verifies invalid-session rejection, owner-only key visibility,
+cross-user rotation/revocation denial, and the register → rotate → revoke
+lifecycle. It never uses a service-role credential and does not print JWTs or
+private key material.
+
+Run only against NOVA-STAGING after creating two separate staging Auth users
+and obtaining their short-lived session JWTs:
+
+```sh
+NOVA_GUARD_FUNCTION_URL="https://<staging-project>.supabase.co/functions/v1/nova-module-registry" \\
+SUPABASE_PUBLISHABLE_KEY="<staging-publishable-key>" \\
+NOVA_TEST_USER_A_JWT="<user-a-session-jwt>" \\
+NOVA_TEST_USER_B_JWT="<user-b-session-jwt>" \\
+NOVA_E2E_ALLOW_MUTATIONS=true \\
+deno run --allow-env --allow-net scripts/staging/nova-module-registry-e2e.ts
+```
+
+The explicit mutation flag is required because the test creates and revokes
+temporary publisher keys. Use disposable staging accounts only. Do not put
+JWTs or keys in shell history, CI logs, issue comments, or repository files.
+The harness has been committed but has **not** been executed: staging currently
+has zero Auth users, so authenticated E2E evidence remains pending.
