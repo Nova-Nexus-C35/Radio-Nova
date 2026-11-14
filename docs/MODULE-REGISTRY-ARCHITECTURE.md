@@ -1,0 +1,72 @@
+# NOVA Module Registry — seguridad y datos
+
+Estado: diseño de esquema; no desplegado ni aplicado en Supabase.  
+Autoridad: Nova Guard.
+
+## Objetivo
+
+Centralizar la confianza de publicadores, el catálogo firmado, las autorizaciones remotas y la auditoría del ciclo de vida de módulos NOVA. Los módulos instalados y sus datos de usuario siguen siendo propiedad del dispositivo/módulo; este registro solo guarda metadatos y referencias de artefactos.
+
+## Modelo de datos propuesto
+
+Las tablas se ubicarán en el esquema privado `private`, sin acceso directo desde Data API:
+
+### `nova_module_publishers`
+- `publisher_id` (PK, ID opaco y estable).
+- `public_key_base64` (solo clave pública Ed25519; nunca clave privada).
+- `algorithm` (actualmente Ed25519).
+- `status` (active/revoked), `created_at`, `revoked_at`.
+- La rotación añade una nueva clave/versionado; no sobrescribe silenciosamente la clave anterior.
+
+### `nova_module_registry`
+- `module_id`, `version` (clave única).
+- `manifest` JSONB validado contra el contrato versionado del Workspace.
+- `execution_mode` (local/remote/hybrid).
+- `artifact_sha256`, `signature_base64`, `publisher_id`.
+- `artifact_storage_path` dentro del bucket privado `nova-modules`.
+- `status` (draft/review/published/revoked), timestamps.
+- Nunca guardar código de módulo en filas JSON ni URL pública sin firma.
+
+### `nova_module_user_grants`
+- `owner_user_id`, `module_id`, `version`.
+- Permisos aprobados, estado y timestamps de concesión/revocación.
+- Revocar debe impedir nuevas invocaciones remotas inmediatamente; las sesiones/cachés locales deben respetar expiración corta y consultar revocación.
+
+### `nova_module_audit`
+- Actor, módulo/versión, acción, resultado, fecha y metadatos técnicos permitidos.
+- No registrar tokens, claves, payloads privados ni contenido del usuario.
+
+## Límites de acceso
+
+- RLS habilitado y FORCE RLS en todas las tablas privadas.
+- Revocar privilegios de `PUBLIC`, `anon` y `authenticated`; conceder acceso de datos solo al rol de servidor `service_role` desde Edge Functions.
+- Los clientes Android/web nunca reciben la clave `service_role`.
+- Las Edge Functions exigen JWT cuando operan en nombre de usuario y verifican rol/ownership desde datos confiables del servidor, nunca desde `user_metadata`.
+- Las operaciones administrativas de publicación exigen rol verificado por backend, aprobación y auditoría.
+- El bucket `nova-modules` será privado; clientes no obtienen enlaces públicos permanentes. Descargas autenticadas con URL firmada de corta duración después de autorización.
+
+## Firma y publicación
+
+1. El publicador firma el manifiesto canónico y el SHA-256 del artefacto con su clave privada fuera de Git.
+2. Nova Guard conserva únicamente la clave pública de confianza y su estado de revocación.
+3. El backend verifica hash, firma, estado del publicador, compatibilidad, licencias y permisos.
+4. Solo el estado `published` se expone al catálogo.
+5. Revocar un publicador bloquea nuevas instalaciones y actualizaciones; se conserva el registro de auditoría.
+6. Los clientes verifican otra vez firma/hash antes de instalar, aunque el backend ya haya validado.
+
+## Separación de datos existente
+
+La inspección de Nova-Nexus encontró 91 tablas en `public` y `private`, todas con RLS habilitado. No se moverán masivamente tablas existentes ni se creará una base por módulo sin mapa de consumidores y pruebas. La primera fase mantiene las tablas de cuentas, identidad, memoria, banco y auditoría donde están; los módulos nuevos usan namespaces y APIs. La separación física solo se considera si hay una justificación de aislamiento, escala o ciclo de vida.
+
+## Despliegue por etapas
+
+1. Revisar este modelo y el contrato de manifiesto.
+2. Crear migración mediante Supabase CLI en un entorno de desarrollo/staging.
+3. Aplicar RLS, grants, bucket privado y pruebas de acceso cruzado.
+4. Implementar Edge Functions de catálogo, publicación, grants y descarga.
+5. Probar con dos usuarios y dos publicadores de prueba; verificar revocación.
+6. Desplegar a producción solo tras backup, aprobación de seguridad y rollback probado.
+
+## Estado
+
+No hay tablas nuevas, bucket, Edge Functions ni cambios de producción creados por este documento. Es una especificación para la siguiente fase, no una afirmación de implementación.
