@@ -88,7 +88,7 @@ async function audit(
   publisherId?: string,
   keyId?: string,
 ): Promise<void> {
-  await dbRequest(url, secretKey, "nova_module_audit", "POST", {
+  const response = await dbRequest(url, secretKey, "nova_module_audit", "POST", {
     actor_user_id: caller.id,
     actor_role: "publisher_owner",
     // Publisher key events are not module lifecycle events; keep module columns null.
@@ -100,7 +100,15 @@ async function audit(
       publisherId: publisherId ?? null,
       publisherKeyId: keyId ?? null,
     },
-  }).catch(() => undefined);
+  }).catch(() => null);
+  if (!response?.ok) {
+    // Never hide audit persistence failures; do not log tokens, keys, or caller data.
+    console.error("nova_module_audit_write_failed", {
+      action,
+      outcome,
+      status: response?.status ?? "network_error",
+    });
+  }
 }
 
 async function ownedKey(
