@@ -91,11 +91,15 @@ async function audit(
   await dbRequest(url, secretKey, "nova_module_audit", "POST", {
     actor_user_id: caller.id,
     actor_role: "publisher_owner",
-    module_id: publisherId ?? null,
-    module_version: keyId ?? null,
+    // Publisher key events are not module lifecycle events; keep module columns null.
+    module_id: null,
+    module_version: null,
     action,
     outcome,
-    metadata: {},
+    metadata: {
+      publisherId: publisherId ?? null,
+      publisherKeyId: keyId ?? null,
+    },
   }).catch(() => undefined);
 }
 
