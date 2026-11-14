@@ -75,7 +75,7 @@ async function main(): Promise<void> {
   const publisherId = `e2e-${crypto.randomUUID()}`;
   const firstKeyId = `key-a-${crypto.randomUUID()}`;
   const secondKeyId = `key-b-${crypto.randomUUID()}`;
-  let activeKeyId: string | null = null;
+  let publisherRegistered = false;
   console.info("Temporary E2E publisher ID:", publisherId);
 
   try {
@@ -87,7 +87,7 @@ async function main(): Promise<void> {
     });
     assert(registered.status === 201 && registered.payload.ok === true,
       "User A must be able to register a publisher key.");
-    activeKeyId = firstKeyId;
+    publisherRegistered = true;
 
     const ownerList = await invoke(userA, { action: "publisher.keys.list", publisherId });
     assert(ownerList.status === 200 && Array.isArray(ownerList.payload.publishers),
@@ -121,7 +121,7 @@ async function main(): Promise<void> {
     });
     assert(rotated.status === 200 && rotated.payload.ok === true,
       "User A must be able to rotate their active key.");
-    activeKeyId = secondKeyId;
+
 
     const afterRotation = await invoke(userA, { action: "publisher.keys.list", publisherId });
     assert(afterRotation.status === 200 && Array.isArray(afterRotation.payload.publishers),
@@ -147,7 +147,7 @@ async function main(): Promise<void> {
     });
     assert(revoked.status === 200 && revoked.payload.ok === true,
       "User A must be able to revoke their active key.");
-    activeKeyId = null;
+
 
     const finalList = await invoke(userA, { action: "publisher.keys.list", publisherId });
     assert(finalList.status === 200 && Array.isArray(finalList.payload.publishers),
@@ -158,14 +158,24 @@ async function main(): Promise<void> {
       "Both lifecycle keys must be retained as revoked.");
     console.log("PASS: invalid-session rejection, owner scoping, cross-user denial, register, rotate, revoke.");
   } finally {
-    if (activeKeyId) {
-      const cleanup = await invoke(userA, {
-        action: "publisher.revoke",
-        publisherId,
-        publisherKeyId: activeKeyId,
-      });
-      if (cleanup.status !== 200) {
-        console.error("CLEANUP_REQUIRED: a temporary staging key may remain active; inspect the temporary e2e-* publisher record in NOVA-STAGING.");
+    if (publisherRegistered) {
+      const current = await invoke(userA, { action: "publisher.keys.list", publisherId });
+      if (current.status !== 200 || !Array.isArray(current.payload.publishers)) {
+        console.error("CLEANUP_REQUIRED: could not inspect the temporary e2e-* publisher record in NOVA-STAGING.");
+      } else {
+        const activeRows = (current.payload.publishers as JsonObject[]).filter(
+          (row) => row.status === "active" && typeof row.publisherKeyId === "string",
+        );
+        for (const row of activeRows) {
+          const cleanup = await invoke(userA, {
+            action: "publisher.revoke",
+            publisherId,
+            publisherKeyId: row.publisherKeyId as string,
+          });
+          if (cleanup.status !== 200) {
+            console.error("CLEANUP_REQUIRED: an active temporary staging key could not be revoked.");
+          }
+        }
       }
     }
   }
