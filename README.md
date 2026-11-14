@@ -137,4 +137,4 @@ Las alternativas gratuitas sin tarjeta para CI/CD y hosting, con límites y plan
 
 ## NOVA Module Registry
 
-La política y el modelo de datos para publicadores confiables, catálogo firmado, permisos y auditoría de módulos están en [docs/MODULE-REGISTRY-ARCHITECTURE.md](docs/MODULE-REGISTRY-ARCHITECTURE.md). Es un diseño pendiente de migración y despliegue; no se han creado tablas ni servicios de producción.
+El registro de publicadores y las operaciones atómicas de claves están desplegados en el proyecto aislado NOVA-STAGING, con JWT obligatorio y auditoría transaccional. La arquitectura, los límites y los pendientes de integración están en [docs/MODULE-REGISTRY-ARCHITECTURE.md](docs/MODULE-REGISTRY-ARCHITECTURE.md). Producción no se ha modificado; el PR sigue abierto y en borrador.
