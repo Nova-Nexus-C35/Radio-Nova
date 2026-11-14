@@ -187,6 +187,38 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+
+  if (body.action === "publisher.keys.list") {
+    if (body.publisherId !== undefined && !validIdentifier(body.publisherId)) {
+      return json({ error: "invalid_publisher_id" }, 400);
+    }
+    const filters = new URLSearchParams({
+      select: "publisher_id,publisher_key_id,public_key_base64,algorithm,status,created_at,revoked_at,supersedes_key_id",
+      owner_user_id: `eq.${caller.id}`,
+      order: "created_at.asc",
+      limit: "200",
+    });
+    if (body.publisherId) filters.set("publisher_id", `eq.${body.publisherId}`);
+    const response = await dbRequest(supabaseUrl, secretKey, `nova_module_publishers?${filters}`);
+    if (!response.ok) return json({ error: "publisher_keys_unavailable" }, 503);
+    const rows = await response.json();
+    if (!Array.isArray(rows)) return json({ error: "publisher_keys_unavailable" }, 503);
+    return json({
+      ok: true,
+      action: body.action,
+      publishers: rows.map((row) => ({
+        publisherId: row.publisher_id,
+        publisherKeyId: row.publisher_key_id,
+        publicKeyBase64: row.public_key_base64,
+        algorithm: row.algorithm,
+        status: row.status,
+        createdAt: row.created_at,
+        revokedAt: row.revoked_at,
+        supersedesKeyId: row.supersedes_key_id,
+      })),
+    });
+  }
+
   if (body.action === "publisher.register") {
     if (!validIdentifier(body.publisherId) || !validIdentifier(body.publisherKeyId) ||
         typeof body.publicKeyBase64 !== "string") {
