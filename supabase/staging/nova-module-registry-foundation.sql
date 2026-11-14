@@ -26,7 +26,7 @@ create table private.nova_module_publishers (
 
 create table private.nova_module_registry (
   module_id text not null check (module_id ~ '^nova\.[a-z0-9]+([.-][a-z0-9]+)*$'),
-  version text not null check (version ~ '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$'),
+  version text not null check (version ~ '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$'),
   manifest jsonb not null check (jsonb_typeof(manifest) = 'object' and octet_length(manifest::text) <= 65536),
   execution_mode text not null check (execution_mode in ('local','remote','hybrid')),
   artifact_sha256 text not null check (artifact_sha256 ~ '^[a-fA-F0-9]{64}$'),
