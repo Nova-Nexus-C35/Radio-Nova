@@ -55,7 +55,7 @@ jobs:
           test -n "$NOVA_TEST_USER_A_JWT"
           test -n "$NOVA_TEST_USER_B_JWT"
           case "$NOVA_GUARD_FUNCTION_URL" in
-            https://*.supabase.co/functions/v1/nova-module-registry) ;;
+            https://mrgidouaooibaopvntch.supabase.co/functions/v1/nova-module-registry) ;;
             *) echo "Refusing to run outside the expected Supabase Edge Function URL shape"; exit 1 ;;
           esac
       - name: Type-check E2E harness
