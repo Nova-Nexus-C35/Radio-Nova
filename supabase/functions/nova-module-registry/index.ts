@@ -111,25 +111,42 @@ async function audit(
   }
 }
 
-async function ownedKey(
+type RpcResult = { ok: boolean; status: number; payload: Record<string, unknown> };
+
+async function rpcRequest(
   url: string,
   secretKey: string,
-  caller: Caller,
-  publisherId: string,
-  keyId: string,
-): Promise<boolean> {
-  const query = new URLSearchParams({
-    select: "publisher_id",
-    publisher_id: `eq.${publisherId}`,
-    publisher_key_id: `eq.${keyId}`,
-    owner_user_id: `eq.${caller.id}`,
-    status: "eq.active",
-    limit: "1",
-  });
-  const response = await dbRequest(url, secretKey, `nova_module_publishers?${query}`);
-  if (!response.ok) return false;
-  const rows = await response.json();
-  return Array.isArray(rows) && rows.length === 1;
+  functionName: string,
+  args: Record<string, unknown>,
+): Promise<RpcResult> {
+  try {
+    const response = await fetch(`${url}/rest/v1/rpc/${functionName}`, {
+      method: "POST",
+      headers: dbHeaders(secretKey, "public"),
+      body: JSON.stringify(args),
+    });
+    let payload: Record<string, unknown> = {};
+    try {
+      const parsed = await response.json();
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        payload = parsed as Record<string, unknown>;
+      }
+    } catch {
+      payload = {};
+    }
+    return { ok: response.ok, status: response.status, payload };
+  } catch {
+    return { ok: false, status: 0, payload: { code: "network_error" } };
+  }
+}
+
+function rpcError(result: RpcResult, fallback: string): { error: string; status: number } {
+  const code = result.payload.code;
+  if (code === "P0002") return { error: "active_owned_key_not_found", status: 404 };
+  if (code === "P0001" || code === "23505") {
+    return { error: "publisher_key_conflict", status: 409 };
+  }
+  return { error: fallback, status: 503 };
 }
 
 Deno.serve(async (req: Request) => {
@@ -241,27 +258,17 @@ Deno.serve(async (req: Request) => {
     } catch {
       return json({ error: "invalid_ed25519_public_key" }, 400);
     }
-    const existingQuery = new URLSearchParams({
-      select: "publisher_id",
-      publisher_id: `eq.${body.publisherId}`,
-      limit: "1",
+    const result = await rpcRequest(supabaseUrl, secretKey, "nova_register_publisher_key", {
+      p_publisher_id: body.publisherId,
+      p_publisher_key_id: body.publisherKeyId,
+      p_owner_user_id: caller.id,
+      p_public_key_base64: body.publicKeyBase64,
     });
-    const existing = await dbRequest(supabaseUrl, secretKey, `nova_module_publishers?${existingQuery}`);
-    if (!existing.ok) return json({ error: "publisher_registry_unavailable" }, 503);
-    if ((await existing.json()).length > 0) return json({ error: "publisher_id_already_registered" }, 409);
-
-    const inserted = await dbRequest(supabaseUrl, secretKey, "nova_module_publishers", "POST", {
-      publisher_id: body.publisherId,
-      publisher_key_id: body.publisherKeyId,
-      owner_user_id: caller.id,
-      created_by: caller.id,
-      public_key_base64: body.publicKeyBase64,
-      algorithm: "Ed25519",
-      status: "active",
-    });
-    if (!inserted.ok) return json({ error: "publisher_registration_failed" }, inserted.status === 409 ? 409 : 503);
-    await audit(supabaseUrl, secretKey, caller, "publisher.register", "success", body.publisherId, body.publisherKeyId);
-    return json({ ok: true, action: body.action, publisherId: body.publisherId, publisherKeyId: body.publisherKeyId }, 201);
+    if (!result.ok) {
+      const mapped = rpcError(result, "publisher_registration_failed");
+      return json({ error: mapped.error }, mapped.status);
+    }
+    return json(result.payload, 201);
   }
 
   if (body.action === "publisher.rotate") {
@@ -275,70 +282,42 @@ Deno.serve(async (req: Request) => {
     } catch {
       return json({ error: "invalid_ed25519_public_key" }, 400);
     }
-    if (!await ownedKey(supabaseUrl, secretKey, caller, body.publisherId, body.oldPublisherKeyId)) {
-      await audit(supabaseUrl, secretKey, caller, "publisher.rotate", "denied", body.publisherId, body.oldPublisherKeyId);
-      return json({ error: "active_owned_key_not_found" }, 404);
+    const result = await rpcRequest(supabaseUrl, secretKey, "nova_rotate_publisher_key", {
+      p_publisher_id: body.publisherId,
+      p_old_publisher_key_id: body.oldPublisherKeyId,
+      p_new_publisher_key_id: body.publisherKeyId,
+      p_owner_user_id: caller.id,
+      p_public_key_base64: body.publicKeyBase64,
+    });
+    if (!result.ok) {
+      if (result.payload.code === "P0002") {
+        await audit(supabaseUrl, secretKey, caller, "publisher.rotate", "denied",
+          body.publisherId, body.oldPublisherKeyId);
+      }
+      const mapped = rpcError(result, "key_rotation_failed");
+      return json({ error: mapped.error }, mapped.status);
     }
-    const inserted = await dbRequest(supabaseUrl, secretKey, "nova_module_publishers", "POST", {
-      publisher_id: body.publisherId,
-      publisher_key_id: body.publisherKeyId,
-      owner_user_id: caller.id,
-      created_by: caller.id,
-      public_key_base64: body.publicKeyBase64,
-      algorithm: "Ed25519",
-      status: "active",
-      supersedes_key_id: body.oldPublisherKeyId,
-    });
-    if (!inserted.ok) return json({ error: "new_publisher_key_registration_failed" }, inserted.status === 409 ? 409 : 503);
-
-    const filter = new URLSearchParams({
-      publisher_id: `eq.${body.publisherId}`,
-      publisher_key_id: `eq.${body.oldPublisherKeyId}`,
-      owner_user_id: `eq.${caller.id}`,
-      status: "eq.active",
-    });
-    const revoked = await dbRequest(supabaseUrl, secretKey, `nova_module_publishers?${filter}`, "PATCH", {
-      status: "revoked",
-      revoked_at: new Date().toISOString(),
-    });
-    if (!revoked.ok || (await revoked.json()).length !== 1) {
-      const cleanup = new URLSearchParams({
-        publisher_id: `eq.${body.publisherId}`,
-        publisher_key_id: `eq.${body.publisherKeyId}`,
-        owner_user_id: `eq.${caller.id}`,
-        status: "eq.active",
-      });
-      await dbRequest(supabaseUrl, secretKey, `nova_module_publishers?${cleanup}`, "DELETE")
-        .catch(() => undefined);
-      return json({ error: "key_rotation_requires_reconciliation" }, 503);
-    }
-    await audit(supabaseUrl, secretKey, caller, "publisher.rotate", "success", body.publisherId, body.publisherKeyId);
-    return json({ ok: true, action: body.action, publisherId: body.publisherId,
-      activePublisherKeyId: body.publisherKeyId, revokedPublisherKeyId: body.oldPublisherKeyId });
+    return json(result.payload);
   }
 
   if (body.action === "publisher.revoke") {
     if (!validIdentifier(body.publisherId) || !validIdentifier(body.publisherKeyId)) {
       return json({ error: "invalid_key_revocation" }, 400);
     }
-    const filter = new URLSearchParams({
-      publisher_id: `eq.${body.publisherId}`,
-      publisher_key_id: `eq.${body.publisherKeyId}`,
-      owner_user_id: `eq.${caller.id}`,
-      status: "eq.active",
+    const result = await rpcRequest(supabaseUrl, secretKey, "nova_revoke_publisher_key", {
+      p_publisher_id: body.publisherId,
+      p_publisher_key_id: body.publisherKeyId,
+      p_owner_user_id: caller.id,
     });
-    const response = await dbRequest(supabaseUrl, secretKey, `nova_module_publishers?${filter}`, "PATCH", {
-      status: "revoked",
-      revoked_at: new Date().toISOString(),
-    });
-    if (!response.ok) return json({ error: "publisher_revocation_failed" }, 503);
-    const rows = await response.json();
-    if (!Array.isArray(rows) || rows.length !== 1) {
-      await audit(supabaseUrl, secretKey, caller, "publisher.revoke", "denied", body.publisherId, body.publisherKeyId);
-      return json({ error: "active_owned_key_not_found" }, 404);
+    if (!result.ok) {
+      if (result.payload.code === "P0002") {
+        await audit(supabaseUrl, secretKey, caller, "publisher.revoke", "denied",
+          body.publisherId, body.publisherKeyId);
+      }
+      const mapped = rpcError(result, "publisher_revocation_failed");
+      return json({ error: mapped.error }, mapped.status);
     }
-    await audit(supabaseUrl, secretKey, caller, "publisher.revoke", "success", body.publisherId, body.publisherKeyId);
-    return json({ ok: true, action: body.action, publisherId: body.publisherId, revokedPublisherKeyId: body.publisherKeyId });
+    return json(result.payload);
   }
 
   return json({ error: "unsupported_action" }, 400);
