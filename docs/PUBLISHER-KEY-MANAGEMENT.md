@@ -4,7 +4,8 @@ The `nova-module-registry` Edge Function requires a valid Supabase user access t
 (`Authorization: Bearer <access-token>`) and keeps the service-role/secret key on the server.
 
 All actions use POST with a JSON body. The function checks the caller with Supabase Auth
-before performing any operation.
+before performing any operation. The caller ID passed to database RPCs is taken only from
+that verified session; the client cannot choose the owner identity.
 
 ## Register a publisher key
 
@@ -17,7 +18,9 @@ before performing any operation.
 }
 ```
 
-A publisher ID can only be registered once. The private signing key must remain with the
+A publisher ID can only be registered once. Registration and its success audit event are
+written in one database transaction. A transaction-scoped advisory lock serializes first
+registrations for the same publisher ID. The private signing key must remain with the
 publisher and must never be uploaded to NOVA or committed to a repository.
 
 ## Rotate a publisher key
@@ -32,10 +35,11 @@ publisher and must never be uploaded to NOVA or committed to a repository.
 }
 ```
 
-The caller must own the active old key. The new public key is validated as Ed25519,
-linked to the old key, and the old key is revoked. If the final revocation step cannot
-be confirmed, the function removes only the newly inserted key and returns
-`key_rotation_requires_reconciliation`; callers must not assume rotation succeeded.
+The caller must own the active old key. A single database transaction locks that key,
+inserts the new public key, revokes the old key, and writes the success audit event.
+Concurrent rotations serialize on the old key; only one can succeed. If insertion,
+revocation, or audit writing fails, PostgreSQL rolls back the complete operation. The
+function returns an error and callers must not assume rotation succeeded.
 
 ## Revoke a publisher key
 
@@ -47,8 +51,17 @@ be confirmed, the function removes only the newly inserted key and returns
 }
 ```
 
-Only the owner of that active key can revoke it. Revoked keys are excluded from the
-public catalog's active-publisher join.
+Only the owner of that active key can revoke it. Revocation and its success audit event
+are one database transaction. Concurrent revocations serialize on the key row. Revoked
+keys are excluded from the public catalog's active-publisher join.
+
+## List publisher keys
+
+```json
+{ "action": "publisher.keys.list", "publisherId": "nova-community" }
+```
+
+The publisher ID filter is optional. Results are always scoped to the verified caller.
 
 ## List published modules
 
@@ -58,6 +71,13 @@ public catalog's active-publisher join.
 
 The catalog only returns modules whose registry status is `published` and whose
 publisher key remains active.
+
+## Deployment gate
+
+The RPC migration is `supabase/staging/nova-module-key-atomic-operations.sql`.
+It must be applied to NOVA-STAGING before deploying the matching Edge Function branch.
+The migration and Edge Function change are currently committed to the PR branch but
+have not been deployed. Do not apply this staging SQL to production.
 
 ## Explicitly not enabled yet
 
