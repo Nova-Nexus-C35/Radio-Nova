@@ -1,6 +1,6 @@
 # NOVA Module Registry — seguridad y datos
 
-Estado: diseño de esquema; no desplegado ni aplicado en Supabase.  
+Estado: base inicial implementada en el proyecto aislado NOVA-STAGING; la ampliación de publicación, permisos y artefactos sigue pendiente. No desplegado en producción.  
 Autoridad: Nova Guard.
 
 ## Objetivo
@@ -82,11 +82,20 @@ La inspección de Nova-Nexus encontró 91 tablas en `public` y `private`, todas 
 
 ## Estado
 
-No hay tablas nuevas, bucket ni Edge Functions de registro de módulos creados por este documento. La inspección de solo lectura del proyecto Supabase Nova-Nexus (14 nov 2026) confirmó que no aparecen tablas `nova_module_*` ni una Edge Function `nova-module-registry`; no se aplicó ningún cambio remoto.
+## Estado real de NOVA-STAGING — 14 nov 2026
+
+- Proyecto Supabase independiente `NOVA-STAGING`; producción no se modificó.
+- Esquema privado con cuatro tablas de registro/auditoría, RLS y FORCE RLS; acceso directo de `anon`, `authenticated` y `public` revocado. Las operaciones de servidor usan `service_role` únicamente dentro de la Edge Function.
+- Bucket `nova-modules` privado, con límite de 64 MiB.
+- Edge Function `nova-module-registry` desplegada y `ACTIVE` (versión 3), con `verify_jwt=true`.
+- Acciones implementadas: `catalog.list`, `publisher.register`, `publisher.keys.list`, `publisher.rotate` y `publisher.revoke`.
+- Las pruebas autenticadas end-to-end con dos usuarios/publicadores reales siguen pendientes. CI no ha ejecutado pasos verificables en los PR relacionados.
+- Pendiente: fuente protegida de roles administrativos; envío, revisión, publicación y revocación de módulos; grants por versión; autorización de artefactos y URLs firmadas de corta duración; pruebas de revocación, aislamiento y expiración.
+- No se aplicaron migraciones adicionales ni cambios en producción.
 
 El runtime compartido de verificación de manifiestos/Ed25519 se está preparando en `Cumba35/Nova-Nexus`, PR draft #16. Ese código verifica el contrato y la firma, pero aún no consulta este registro persistente.
 
-La generación de la migración sigue bloqueada hasta disponer de Supabase CLI local: no está instalado en el entorno de trabajo actual. No se improvisará un nombre de migración ni se aplicará DDL directamente a producción. Esta especificación no es una afirmación de implementación.
+La base inicial ya se aplicó en NOVA-STAGING. El SQL versionado en `supabase/staging/` sirve como referencia de bootstrap y no debe tratarse como una migración CLI lista para aplicar en producción. Cualquier ampliación debe generarse y revisarse con Supabase CLI en staging; no se aplicará DDL directamente a producción.
 
 
 ## Implementación de verificación preparada — 14 nov 2026
