@@ -14,6 +14,9 @@ security invoker
 set search_path = ''
 as $$
 begin
+  -- Serialize first-time registrations for the same publisher ID, including races.
+  perform pg_advisory_xact_lock(hashtextextended(p_publisher_id, 0));
+
   if exists (
     select 1 from private.nova_module_publishers p
     where p.publisher_id = p_publisher_id
