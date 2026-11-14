@@ -75,6 +75,7 @@ async function main(): Promise<void> {
   const publisherId = `e2e-${crypto.randomUUID()}`;
   const firstKeyId = `key-a-${crypto.randomUUID()}`;
   const secondKeyId = `key-b-${crypto.randomUUID()}`;
+  const thirdKeyId = `key-c-${crypto.randomUUID()}`;
   let publisherRegistered = false;
   console.info("Temporary E2E publisher ID:", publisherId);
 
@@ -112,30 +113,43 @@ async function main(): Promise<void> {
     assert(crossUserRotation.status === 404,
       "User B must not rotate User A's key; expected HTTP 404.");
 
-    const rotated = await invoke(userA, {
-      action: "publisher.rotate",
-      publisherId,
-      oldPublisherKeyId: firstKeyId,
-      publisherKeyId: secondKeyId,
-      publicKeyBase64: await publicKeyBase64(),
-    });
-    assert(rotated.status === 200 && rotated.payload.ok === true,
-      "User A must be able to rotate their active key.");
-
+    const rotations = await Promise.all([
+      invoke(userA, {
+        action: "publisher.rotate",
+        publisherId,
+        oldPublisherKeyId: firstKeyId,
+        publisherKeyId: secondKeyId,
+        publicKeyBase64: await publicKeyBase64(),
+      }),
+      invoke(userA, {
+        action: "publisher.rotate",
+        publisherId,
+        oldPublisherKeyId: firstKeyId,
+        publisherKeyId: thirdKeyId,
+        publicKeyBase64: await publicKeyBase64(),
+      }),
+    ]);
+    assert(rotations.filter((result) => result.status === 200 && result.payload.ok === true).length === 1,
+      "Exactly one concurrent rotation of the same active key must succeed.");
+    assert(rotations.filter((result) => result.status === 404).length === 1,
+      "The competing rotation must observe the old key as revoked/not active.");
+    const winnerKeyId = rotations[0].status === 200 ? secondKeyId : thirdKeyId;
 
     const afterRotation = await invoke(userA, { action: "publisher.keys.list", publisherId });
     assert(afterRotation.status === 200 && Array.isArray(afterRotation.payload.publishers),
-      "Owner key listing after rotation must succeed.");
+      "Owner key listing after concurrent rotation must succeed.");
     const rotatedRows = afterRotation.payload.publishers as JsonObject[];
     assert(rotatedRows.some((row) => row.publisherKeyId === firstKeyId && row.status === "revoked"),
       "Old key must be retained as revoked.");
-    assert(rotatedRows.some((row) => row.publisherKeyId === secondKeyId && row.status === "active"),
-      "New key must be active.");
+    assert(rotatedRows.some((row) => row.publisherKeyId === winnerKeyId && row.status === "active"),
+      "Exactly one replacement key must be active.");
+    assert(!rotatedRows.some((row) => row.publisherKeyId === (winnerKeyId === secondKeyId ? thirdKeyId : secondKeyId)),
+      "The losing concurrent rotation must not leave a replacement key.");
 
     const crossUserRevoke = await invoke(userB, {
       action: "publisher.revoke",
       publisherId,
-      publisherKeyId: secondKeyId,
+      publisherKeyId: winnerKeyId,
     });
     assert(crossUserRevoke.status === 404,
       "User B must not revoke User A's key; expected HTTP 404.");
@@ -143,20 +157,19 @@ async function main(): Promise<void> {
     const revoked = await invoke(userA, {
       action: "publisher.revoke",
       publisherId,
-      publisherKeyId: secondKeyId,
+      publisherKeyId: winnerKeyId,
     });
     assert(revoked.status === 200 && revoked.payload.ok === true,
-      "User A must be able to revoke their active key.");
-
+      "User A must be able to revoke the winning active key.");
 
     const finalList = await invoke(userA, { action: "publisher.keys.list", publisherId });
     assert(finalList.status === 200 && Array.isArray(finalList.payload.publishers),
       "Final owner key listing must succeed.");
     const finalRows = finalList.payload.publishers as JsonObject[];
     assert(finalRows.some((row) => row.publisherKeyId === firstKeyId && row.status === "revoked")
-      && finalRows.some((row) => row.publisherKeyId === secondKeyId && row.status === "revoked"),
-      "Both lifecycle keys must be retained as revoked.");
-    console.log("PASS: invalid-session rejection, owner scoping, cross-user denial, register, rotate, revoke.");
+      && finalRows.some((row) => row.publisherKeyId === winnerKeyId && row.status === "revoked"),
+      "The original and winning replacement keys must be retained as revoked.");
+    console.log("PASS: invalid-session rejection, owner scoping, cross-user denial, register, concurrent rotation serialization, revoke.");
   } finally {
     if (publisherRegistered) {
       const current = await invoke(userA, { action: "publisher.keys.list", publisherId });
