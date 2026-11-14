@@ -76,6 +76,7 @@ async function main(): Promise<void> {
   const firstKeyId = `key-a-${crypto.randomUUID()}`;
   const secondKeyId = `key-b-${crypto.randomUUID()}`;
   let activeKeyId: string | null = null;
+  console.info("Temporary E2E publisher ID:", publisherId);
 
   try {
     const registered = await invoke(userA, {
@@ -164,7 +165,7 @@ async function main(): Promise<void> {
         publisherKeyId: activeKeyId,
       });
       if (cleanup.status !== 200) {
-        console.error("CLEANUP_REQUIRED: a temporary staging key may remain active; inspect the publisherId shown in the test environment.");
+        console.error("CLEANUP_REQUIRED: a temporary staging key may remain active; inspect the temporary e2e-* publisher record in NOVA-STAGING.");
       }
     }
   }
