@@ -69,8 +69,8 @@ async function main(): Promise<void> {
   assert(Deno.env.get("NOVA_E2E_ALLOW_MUTATIONS") === "true",
     "Set NOVA_E2E_ALLOW_MUTATIONS=true to authorize temporary staging key mutations.");
 
-  const invalidSession = await invoke("invalid-expired-session", { action: "publisher.keys.list" });
-  assert(invalidSession.status === 401, "Invalid/expired session must return HTTP 401.");
+  const invalidSession = await invoke("invalid-session-token", { action: "publisher.keys.list" });
+  assert(invalidSession.status === 401, "An invalid session token must return HTTP 401.");
 
   const publisherId = `e2e-${crypto.randomUUID()}`;
   const firstKeyId = `key-a-${crypto.randomUUID()}`;
