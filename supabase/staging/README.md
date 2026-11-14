@@ -37,11 +37,11 @@ Run only against NOVA-STAGING after creating two separate staging Auth users
 and obtaining their short-lived session JWTs:
 
 ```sh
-NOVA_GUARD_FUNCTION_URL="https://<staging-project>.supabase.co/functions/v1/nova-module-registry" \\
-SUPABASE_PUBLISHABLE_KEY="<staging-publishable-key>" \\
-NOVA_TEST_USER_A_JWT="<user-a-session-jwt>" \\
-NOVA_TEST_USER_B_JWT="<user-b-session-jwt>" \\
-NOVA_E2E_ALLOW_MUTATIONS=true \\
+NOVA_GUARD_FUNCTION_URL="https://<staging-project>.supabase.co/functions/v1/nova-module-registry" \
+SUPABASE_PUBLISHABLE_KEY="<staging-publishable-key>" \
+NOVA_TEST_USER_A_JWT="<user-a-session-jwt>" \
+NOVA_TEST_USER_B_JWT="<user-b-session-jwt>" \
+NOVA_E2E_ALLOW_MUTATIONS=true \
 deno run --allow-env --allow-net scripts/staging/nova-module-registry-e2e.ts
 ```
 
