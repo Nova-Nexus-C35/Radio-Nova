@@ -87,3 +87,12 @@ No hay tablas nuevas, bucket ni Edge Functions de registro de módulos creados p
 El runtime compartido de verificación de manifiestos/Ed25519 se está preparando en `Cumba35/Nova-Nexus`, PR draft #16. Ese código verifica el contrato y la firma, pero aún no consulta este registro persistente.
 
 La generación de la migración sigue bloqueada hasta disponer de Supabase CLI local: no está instalado en el entorno de trabajo actual. No se improvisará un nombre de migración ni se aplicará DDL directamente a producción. Esta especificación no es una afirmación de implementación.
+
+
+## Implementación de verificación preparada — 14 nov 2026
+
+- Nova Nexus PR draft #16 incorpora un verificador TypeScript compartido: valida el manifiesto, calcula SHA-256, verifica firma Ed25519 con clave DER/SPKI y rechaza publicadores revocados. Incluye un vector de firma común con Java/Python.
+- NOVA IA PR #44 incorpora al almacén local de confianza el estado explícito `active/revoked`; una clave revocada bloquea nuevas instalaciones. La configuración sigue siendo estática por entorno y no sustituye al registro central dinámico.
+- Nova Workspace PR #11 mantiene el runtime Java 17 con validación del manifiesto, verificación del artefacto y permisos locales; no ejecuta el código del paquete.
+- CI no ha proporcionado logs ni pasos ejecutados para verificar estas ramas. Ninguna de estas funciones se declara validada.
+- La inspección de Supabase el 14 nov 2026 confirmó que aún no existen tablas `nova_module_*`, bucket `nova-modules` ni Edge Function `nova-module-registry`. La migración y API siguen pendientes; no se ha modificado producción.
