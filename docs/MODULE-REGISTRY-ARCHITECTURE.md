@@ -1,6 +1,6 @@
 # NOVA Module Registry — seguridad y datos
 
-Estado: base de registro de claves implementada en NOVA-STAGING. La rama PR incorpora ahora operaciones atómicas para registro, rotación, revocación y auditoría; la nueva migración y Edge Function aún no se han desplegado en staging. Producción no se ha modificado.
+Estado: base de registro y operaciones atómicas de claves desplegadas en NOVA-STAGING. Migración aplicada y Edge Function versión 4 activa con JWT obligatorio. Producción no se ha modificado.
 Autoridad: Nova Guard.
 
 ## Objetivo y límites
@@ -26,11 +26,11 @@ La Edge Function `nova-module-registry` desplegada actualmente en NOVA-STAGING e
 - `publisher.rotate`: usa una RPC transaccional que bloquea la clave anterior, inserta la nueva, revoca la anterior y escribe auditoría en la misma transacción.
 - `publisher.revoke`: bloquea y revoca la clave activa y escribe auditoría en la misma transacción.
 
-Las RPC `nova_register_publisher_key`, `nova_rotate_publisher_key` y `nova_revoke_publisher_key` se definen en `supabase/staging/nova-module-key-atomic-operations.sql`. Solo `service_role` puede ejecutarlas; la Edge Function valida primero la sesión con Supabase Auth y obtiene el ID del usuario. La función SQL no confía en roles ni IDs de usuario enviados por el cliente: el ID se pasa desde la sesión verificada del servidor.
+Las RPC `nova_register_publisher_key`, `nova_rotate_publisher_key` y `nova_revoke_publisher_key` se definen en `supabase/staging/nova-module-key-atomic-operations.sql`. Solo `service_role` puede ejecutarlas; la Edge Function valida primero la sesión con Supabase Auth y obtiene el ID del usuario. La función SQL no confía en roles ni IDs de usuario enviados por el cliente: el ID se pasa desde la sesión verificada del servidor. La migración `nova_module_key_atomic_operations` ya está aplicada en NOVA-STAGING y la Edge Function versión 4 ya está desplegada con `verify_jwt=true`.
 
 El registro inicial usa un advisory transaction lock por publisher ID para evitar dos registros iniciales concurrentes. Rotación y revocación bloquean la fila activa con `SELECT ... FOR UPDATE`. La escritura de auditoría de éxito ocurre dentro de la misma transacción que la mutación: si la auditoría falla, toda la operación se revierte. Los intentos denegados se registran aparte y no cambian claves.
 
-La migración y el nuevo código Edge Function están en la rama, pero aún no se han aplicado ni desplegado en NOVA-STAGING. No considerar activadas las RPC hasta desplegar ambos componentes en staging y verificarlos.
+La migración y el código Edge Function se aplicaron/desplegaron en NOVA-STAGING el 14 nov 2026. Se verificaron las tres firmas RPC, permisos de ejecución exclusivos de `service_role`, ausencia de permisos para `anon`/`authenticated`, y el caso de rotación de clave inexistente sin cambios en las tablas. Aún faltan pruebas positivas autenticadas y de concurrencia con cuentas reales.
 
 La autenticación se valida contra Supabase Auth. Nunca se aceptan roles desde `user_metadata` ni se exponen claves privadas o service_role.
 
@@ -42,7 +42,7 @@ La integración entre sesión real, NOVA IA y Nova Guard todavía no ha pasado u
 
 ## Riesgos y trabajo bloqueante antes de publicar
 
-- Aplicar la migración atómica en NOVA-STAGING y desplegar la Edge Function desde la misma rama, luego probar rollback real ante fallo de auditoría y carreras de rotación.
+- Ejecutar pruebas positivas autenticadas, rollback inducido por fallo de auditoría y carreras reales de rotación en NOVA-STAGING.
 - No existe aún una fuente protegida de roles administrativos ni acciones activas de submit/review/publish/revoke de módulos.
 - No están implementadas la autorización de grants por versión ni las URLs firmadas de subida/descarga.
 - Debe verificarse el vector de firma canónica Ed25519 de extremo a extremo entre Java, Python y TypeScript.
@@ -59,8 +59,8 @@ NOVA-STAGING es un proyecto Supabase independiente. Los SQL en `supabase/staging
 
 ## Estado — 14 nov 2026
 
-- NOVA-STAGING: cuatro tablas privadas, RLS + FORCE RLS, bucket privado de 64 MiB y Edge Function activa (versión desplegada 3, JWT obligatorio).
-- Código de la rama Nova Guard: cinco acciones; registro/rotación/revocación ahora usan RPC transaccionales en código, pendientes de despliegue conjunto a staging.
+- NOVA-STAGING: cuatro tablas privadas, RLS + FORCE RLS, bucket privado de 64 MiB, migración atómica aplicada y Edge Function activa versión 4 (JWT obligatorio).
+- Código de la rama Nova Guard: cinco acciones; registro/rotación/revocación usan RPC transaccionales desplegadas en staging, con auditoría de éxito en la misma transacción.
 - NOVA IA PR #44: integración request-scoped escrita; E2E pendiente.
 - GitHub Actions: jobs fallan antes de mostrar pasos; no hay CI verificable.
 - Producción: intacta; no se han fusionado PR ni desplegado cambios de estas ramas.
