@@ -77,7 +77,8 @@ La inspección de Nova-Nexus encontró 91 tablas en `public` y `private`, todas 
 3. Aplicar RLS, grants, bucket privado y pruebas de acceso cruzado.
 4. Implementar Edge Functions de catálogo, publicación, grants y descarga.
 5. Probar con dos usuarios y dos publicadores de prueba; verificar revocación.
-6. Ejecutar pruebas con dos usuarios, publicador revocado, permisos insuficientes, versiones incompatibles, hash alterado y URL expirada.\n7. Desplegar a producción solo tras backup, aprobación de seguridad y rollback probado.
+6. Ejecutar pruebas con dos usuarios, publicador revocado, permisos insuficientes, versiones incompatibles, hash alterado y URL expirada.
+7. Desplegar a producción solo tras backup, aprobación de seguridad y rollback probado.
 
 ## Estado
 
