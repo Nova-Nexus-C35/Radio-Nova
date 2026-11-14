@@ -76,8 +76,7 @@ publisher key remains active.
 
 The RPC migration is `supabase/staging/nova-module-key-atomic-operations.sql`.
 It was applied to NOVA-STAGING on 2026-11-14, and the matching Edge Function version 4
-is deployed with `verify_jwt=true`. Positive authenticated account tests and concurrency
-checks remain pending. Do not apply this staging SQL to production.
+is deployed with `verify_jwt=true`. An isolated SQL transaction test passed for register/rotate/revoke and verified rollback of a rotation when its audit insert was deliberately failed. The test user and all test rows were rolled back. Authenticated Edge Function account tests and simultaneous concurrency checks remain pending. Do not apply this staging SQL to production.
 
 ## Explicitly not enabled yet
 
