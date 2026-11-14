@@ -258,8 +258,14 @@ Deno.serve(async (req: Request) => {
       revoked_at: new Date().toISOString(),
     });
     if (!revoked.ok || (await revoked.json()).length !== 1) {
-      await dbRequest(supabaseUrl, secretKey, "nova_module_publishers", "DELETE",
-        undefined).catch(() => undefined);
+      const cleanup = new URLSearchParams({
+        publisher_id: `eq.${body.publisherId}`,
+        publisher_key_id: `eq.${body.publisherKeyId}`,
+        owner_user_id: `eq.${caller.id}`,
+        status: "eq.active",
+      });
+      await dbRequest(supabaseUrl, secretKey, `nova_module_publishers?${cleanup}`, "DELETE")
+        .catch(() => undefined);
       return json({ error: "key_rotation_requires_reconciliation" }, 503);
     }
     await audit(supabaseUrl, secretKey, caller, "publisher.rotate", "success", body.publisherId, body.publisherKeyId);
