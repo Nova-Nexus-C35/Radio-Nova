@@ -50,3 +50,8 @@ temporary publisher keys. Use disposable staging accounts only. Do not put
 JWTs or keys in shell history, CI logs, issue comments, or repository files.
 The harness has been committed but has **not** been executed: staging currently
 has zero Auth users, so authenticated E2E evidence remains pending.
+
+
+### Workflow protegido de E2E
+
+El workflow `.github/workflows/nova-module-registry-e2e.yml` comprueba estáticamente el harness en PRs sin exponer secretos. Su ejecución manual requiere seleccionar explícitamente `yes` para autorizar mutaciones temporales y usa un allowlist exacto del URL del proyecto NOVA-STAGING. Antes de ejecutarlo, configura en GitHub Actions Secrets: `SUPABASE_PUBLISHABLE_KEY`, `NOVA_TEST_USER_A_JWT` y `NOVA_TEST_USER_B_JWT`; `NOVA_GUARD_FUNCTION_URL` debe ser el URL de la función del proyecto staging. Los dos JWT deben pertenecer a cuentas de prueba distintas en NOVA-STAGING. Nunca reutilizar tokens de producción.
