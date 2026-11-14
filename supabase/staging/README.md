@@ -6,7 +6,7 @@ The initial registry foundation is deployed to the isolated Supabase project NOV
 - Tables: nova_module_publishers, nova_module_registry, nova_module_user_grants, nova_module_audit
 - Storage bucket: nova-modules (private, 64 MiB maximum object size)
 - Edge Function: nova-module-registry (JWT required)
-- Implemented Edge Function actions: catalog.list, publisher.register, publisher.rotate, publisher.revoke (publisher owners may manage only their own Ed25519 keys).
+- Implemented Edge Function actions: `catalog.list`, `publisher.register`, `publisher.keys.list`, `publisher.rotate`, `publisher.revoke` (publisher owners may list and manage only their own Ed25519 keys).
 - Database migration name applied in staging: nova_module_registry_foundation and nova_module_registry_server_policies_indexes
 
 The SQL file is a reproducible staging bootstrap reference, not a generated Supabase CLI migration.
