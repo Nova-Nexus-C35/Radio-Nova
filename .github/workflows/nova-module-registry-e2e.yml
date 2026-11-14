@@ -1,0 +1,64 @@
+name: Nova Guard registry E2E harness
+
+on:
+  pull_request:
+    paths:
+      - "scripts/staging/nova-module-registry-e2e.ts"
+      - ".github/workflows/nova-module-registry-e2e.yml"
+  workflow_dispatch:
+    inputs:
+      confirm_staging_mutations:
+        description: "Confirm that this run may create and revoke temporary keys in NOVA-STAGING"
+        required: true
+        type: choice
+        options:
+          - "no"
+          - "yes"
+        default: "no"
+
+permissions:
+  contents: read
+
+jobs:
+  harness-static-check:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check the staging E2E harness
+        run: deno check scripts/staging/nova-module-registry-e2e.ts
+
+  authenticated-staging-e2e:
+    if: github.event_name == 'workflow_dispatch' && inputs.confirm_staging_mutations == 'yes'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NOVA_GUARD_FUNCTION_URL: ${{ secrets.NOVA_GUARD_FUNCTION_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+      NOVA_TEST_USER_A_JWT: ${{ secrets.NOVA_TEST_USER_A_JWT }}
+      NOVA_TEST_USER_B_JWT: ${{ secrets.NOVA_TEST_USER_B_JWT }}
+      NOVA_E2E_ALLOW_MUTATIONS: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Require staging-only test credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$NOVA_GUARD_FUNCTION_URL"
+          test -n "$SUPABASE_PUBLISHABLE_KEY"
+          test -n "$NOVA_TEST_USER_A_JWT"
+          test -n "$NOVA_TEST_USER_B_JWT"
+          case "$NOVA_GUARD_FUNCTION_URL" in
+            https://*.supabase.co/functions/v1/nova-module-registry) ;;
+            *) echo "Refusing to run outside the expected Supabase Edge Function URL shape"; exit 1 ;;
+          esac
+      - name: Type-check E2E harness
+        run: deno check scripts/staging/nova-module-registry-e2e.ts
+      - name: Run authenticated staging lifecycle and concurrency test
+        run: deno run --no-prompt --allow-env --allow-net scripts/staging/nova-module-registry-e2e.ts
