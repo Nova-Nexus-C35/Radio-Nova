@@ -156,3 +156,7 @@ python -m unittest discover -s tests
 ```
 
 Estas instrucciones están documentadas, pero esta sesión no ejecutó el intérprete sobre el repositorio. No considerar los contratos verificados hasta ejecutar ambas comprobaciones y revisar los resultados.
+
+## Robustez del validador — 18 de noviembre de 2026
+
+Se corrigió el tratamiento de IDs malformados durante la detección de duplicados: los valores JSON no textuales ya no se usan como claves de conjunto, evitando una excepción inesperada. Se añadió una prueba unitaria para ID no hashable y duplicado válido. Commits: `b38ed721681bf6c0d8265b718fd1a308954d8ccd` y `ee98158f7d13469454f09a106585f670c7245e6d`. La ejecución de las pruebas sigue pendiente; el cambio no se declara probado.
