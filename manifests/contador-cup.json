@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "id": "contador-cup",
+  "name": "Contador CUP",
+  "version": "0.1.0",
+  "kind": "application",
+  "lifecycle": "in-development",
+  "repository": {
+    "url": "https://github.com/Cumba35/Nova-Workspace",
+    "default_branch": "main"
+  },
+  "capabilities": [
+    "cash.counting",
+    "cashboxes.multiple",
+    "reports.export"
+  ],
+  "permissions": [
+    {
+      "resource": "cashboxes",
+      "action": "read",
+      "scope": "self",
+      "approval": false
+    },
+    {
+      "resource": "counts",
+      "action": "create",
+      "scope": "self",
+      "approval": false
+    },
+    {
+      "resource": "reports",
+      "action": "export",
+      "scope": "self",
+      "approval": true
+    }
+  ],
+  "data_access": [
+    "user-private",
+    "financial"
+  ],
+  "network_policy": "offline-only",
+  "offline_support": true,
+  "dependencies": []
+}
