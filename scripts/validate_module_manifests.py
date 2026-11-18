@@ -70,7 +70,7 @@ def validate(data, where="manifest"):
             if not isinstance(p.get("action"),str) or p.get("action") not in ACTIONS: add(errors,loc,"invalid action")
             if not isinstance(p.get("scope"),str) or p.get("scope") not in SCOPES: add(errors,loc,"invalid scope")
             if not isinstance(p.get("approval"),bool): add(errors,loc,"approval must be boolean")
-            elif p.get("action") in APPROVAL_ACTIONS and p["approval"] is not True: add(errors,loc,"sensitive action requires explicit approval")
+            elif isinstance(p.get("action"),str) and p.get("action") in APPROVAL_ACTIONS and p["approval"] is not True: add(errors,loc,"sensitive action requires explicit approval")
     data_access = data.get("data_access")
     if not isinstance(data_access,list) or any(not isinstance(x,str) or x not in DATA_CLASSES for x in data_access): add(errors,where,"invalid data_access classification")
     elif len(set(data_access)) != len(data_access): add(errors,where,"data_access must be unique")
