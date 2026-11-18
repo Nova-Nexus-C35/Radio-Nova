@@ -18,6 +18,8 @@ SCOPES = {"self","participant","group","tenant","ecosystem","owner-only"}
 DATA_CLASSES = {"public","user-private","sensitive","financial","biometric"}
 NETWORK_POLICIES = {"offline-only","local-first","online-required"}
 APPROVAL_ACTIONS = {"delete","publish","export","admin"}
+FINANCIAL_CLASSES = {"financial"}
+BIOMETRIC_CLASSES = {"biometric"}
 
 def add(errors, where, message):
     errors.append(f"{where}: {message}")
