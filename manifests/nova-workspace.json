@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "id": "nova-workspace",
+  "name": "Nova Workspace",
+  "version": "0.1.0",
+  "kind": "library",
+  "lifecycle": "active",
+  "repository": {
+    "url": "https://github.com/Cumba35/Nova-Workspace",
+    "default_branch": "main"
+  },
+  "capabilities": [
+    "workspace.projects",
+    "workspace.catalog",
+    "workspace.documentation"
+  ],
+  "permissions": [
+    {
+      "resource": "source",
+      "action": "read",
+      "scope": "owner-only",
+      "approval": false
+    },
+    {
+      "resource": "source",
+      "action": "update",
+      "scope": "owner-only",
+      "approval": true
+    },
+    {
+      "resource": "artifacts",
+      "action": "publish",
+      "scope": "owner-only",
+      "approval": true
+    }
+  ],
+  "data_access": [
+    "user-private",
+    "sensitive"
+  ],
+  "network_policy": "local-first",
+  "offline_support": true,
+  "dependencies": []
+}
