@@ -22,5 +22,9 @@ class ManifestValidationTests(unittest.TestCase):
  def test_rejects_unknown_fields(self):
   self.assertTrue(any("unknown root keys" in e for e in validate({**VALID,"runtime_url":"https://example.invalid"})))
 
+ def test_malformed_types_return_errors_not_exceptions(self):
+  data={**VALID,"kind":[],"lifecycle":{},"data_access":[[]],"network_policy":{},"permissions":[{"resource":"demo","action":[],"scope":{},"approval":False}]}
+  self.assertTrue(validate(data))
+
 if __name__ == "__main__":
  unittest.main()
