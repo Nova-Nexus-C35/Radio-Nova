@@ -25,3 +25,9 @@ Este directorio define un formato de manifiesto versionado para aplicaciones y m
 ## Límite
 
 El contrato y el validador están versionados; todavía no existe un servicio NOVA central de identidad/autorización que ejecute estas políticas. No se deben presentar como autorización operativa ni migrar datos privados hasta implementar y probar ese servicio con aislamiento de cuentas y recuperación.
+
+## PDP de referencia — 18 de noviembre de 2026
+
+Se añadió `nova_guard/authorization.py` como núcleo de decisión sin dependencias: deny-by-default, comprobación de manifiesto + clase de datos + alcance + concesión explícita vigente + aprobación verificada y auditoría. La concesión y la aprobación son objetos distintos; `approval: true` en el manifiesto nunca equivale a consentimiento del usuario ni a un permiso. Las decisiones de ecosistema exigen el rol y la concesión `nova.platform_admin`; los recursos biométricos son exclusivos del propietario.
+
+El PDP no persiste concesiones, no autentica usuarios y no implementa un servicio HTTP. Los adaptadores deben obtener identidad, roles, grupos, tenant, propiedad, sensibilidad, aprobaciones y concesiones de fuentes servidoras; nunca confiar en valores enviados por clientes. Deben pasar la lista vigente de concesiones en cada decisión, escribir auditoría durable y denegar ante fallos. La biblioteca y sus pruebas no sustituyen pruebas end-to-end de dos cuentas. No se ejecutaron pruebas en esta sesión; la autorización de producción sigue pendiente.
