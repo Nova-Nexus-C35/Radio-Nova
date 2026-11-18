@@ -85,21 +85,38 @@ def validate(data, where="manifest"):
     check_secrets(data,where,errors)
     return errors
 
+def duplicate_manifest_ids(manifests):
+    """Return duplicate-ID errors without crashing on malformed/unhashable IDs."""
+    errors = []
+    seen = set()
+    for name, data in manifests:
+        if not isinstance(data, dict):
+            continue
+        module_id = data.get("id")
+        # Invalid types are reported by validate(); never use them as set keys.
+        if not isinstance(module_id, str) or not ID_RE.fullmatch(module_id):
+            continue
+        if module_id in seen:
+            add(errors, name, f"duplicate module id: {module_id}")
+        else:
+            seen.add(module_id)
+    return errors
+
+
 def main():
     paths=sorted(MANIFEST_DIR.glob("*.json"))
     if not paths:
         print("ERROR: no manifests found")
         return 1
-    errors=[]; ids=set()
+    errors=[]
+    loaded=[]
     for path in paths:
         try: data=json.loads(path.read_text(encoding="utf-8"))
         except (OSError,json.JSONDecodeError) as exc:
             add(errors,path.name,f"cannot read JSON: {exc}"); continue
         errors.extend(validate(data,path.name))
-        if isinstance(data,dict):
-            mid=data.get("id")
-            if mid in ids: add(errors,path.name,f"duplicate module id: {mid}")
-            ids.add(mid)
+        loaded.append((path.name,data))
+    errors.extend(duplicate_manifest_ids(loaded))
     if errors:
         print("NOVA manifest validation failed:")
         for error in errors: print(f"- {error}")
