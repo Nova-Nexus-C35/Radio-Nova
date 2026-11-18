@@ -124,6 +124,10 @@ Durante la inspección no había perfiles ni muestras biométricas, consentimien
 9. Toda modificación de seguridad debe incluir migración versionada, pruebas y verificación posterior.
 10. Nunca declarar una función como activa o segura basándose únicamente en que existe su tabla, bucket, endpoint o documentación.
 
+## Validación de RLS social heredada — 18 de noviembre de 2026
+
+La auditoría inicial de comentarios/reacciones se corrigió tras una prueba transaccional en NOVA-STAGING: las subconsultas a la publicación padre sí aplican su RLS; el escenario privado bloqueó lecturas y escrituras hijas, mientras que el escenario público permitió las lecturas esperadas. No se cambió ninguna política. Evidencia y test rollback-only: [auditoría](docs/LEGACY-SUPABASE-SOCIAL-RLS-VALIDATION-2026-11-18.md) y [SQL de regresión](tests/legacy_supabase/nova_social_parent_rls_smoke.sql).
+
 ## Estado operativo de Nova IA
 
 La auditoría de GitHub Actions, Railway, notificaciones SMTP y biometría Android, con bloqueos confirmados y criterios de recuperación, está en [docs/NOVA-IA-OPERATIONS-RECOVERY.md](docs/NOVA-IA-OPERATIONS-RECOVERY.md). No declarar operativas las funciones sin pruebas reales.
