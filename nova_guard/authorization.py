@@ -184,7 +184,8 @@ class AuthorizationEngine:
                 return False
         return True
 
-    def _decide(self, principal: Principal, request: AuthorizationRequest) -> Decision:
+    def _decide(self, principal: Principal, request: AuthorizationRequest,
+                grants: Optional[Iterable[Grant]] = None) -> Decision:
         if not isinstance(principal, Principal) or not isinstance(request, AuthorizationRequest):
             return Decision(False, "invalid-request")
         resource = request.resource
@@ -242,7 +243,10 @@ class AuthorizationEngine:
         if not self._scope_matches(principal, resource, request.scope):
             return Decision(False, "scope-mismatch")
 
-        for grant in self._grants:
+        # Adapters should pass a freshly loaded authoritative grant snapshot on
+        # every request so revocations do not wait for a cached engine instance.
+        active_grants = tuple(self._grants if grants is None else grants)
+        for grant in active_grants:
             if not isinstance(grant, Grant) or grant.revoked is not False:
                 continue
             if (not isinstance(grant.grant_id, str) or not grant.grant_id
@@ -277,9 +281,14 @@ class AuthorizationEngine:
 
         return Decision(False, "no-active-grant")
 
-    def authorize(self, principal: Principal, request: AuthorizationRequest) -> Decision:
-        """Evaluate and emit a metadata-only audit event; audit failure fails closed."""
-        decision = self._decide(principal, request)
+    def authorize(self, principal: Principal, request: AuthorizationRequest,
+                  grants: Optional[Iterable[Grant]] = None) -> Decision:
+        """Evaluate with an optional fresh grant snapshot and audit the decision.
+
+        Production adapters should pass the current authoritative grants on every
+        call. Audit failure always fails closed.
+        """
+        decision = self._decide(principal, request, grants)
         principal_id = principal.principal_id if isinstance(principal, Principal) else "unknown"
         resource = request.resource if isinstance(request, AuthorizationRequest) else None
         event = AuditEvent(
