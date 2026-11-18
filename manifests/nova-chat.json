@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "id": "nova-chat",
+  "name": "Nova Chat",
+  "version": "0.1.0",
+  "kind": "application",
+  "lifecycle": "in-development",
+  "repository": {
+    "url": "https://github.com/Cumba35/Nova-Chat",
+    "default_branch": "main"
+  },
+  "capabilities": [
+    "messaging.text",
+    "groups.direct",
+    "groups.community",
+    "notifications.in-app",
+    "moderation.user-reports"
+  ],
+  "permissions": [
+    {
+      "resource": "profiles.public",
+      "action": "read",
+      "scope": "participant",
+      "approval": false
+    },
+    {
+      "resource": "conversations",
+      "action": "create",
+      "scope": "self",
+      "approval": false
+    },
+    {
+      "resource": "messages",
+      "action": "create",
+      "scope": "participant",
+      "approval": false
+    },
+    {
+      "resource": "messages",
+      "action": "delete",
+      "scope": "self",
+      "approval": true
+    },
+    {
+      "resource": "reports",
+      "action": "create",
+      "scope": "self",
+      "approval": false
+    }
+  ],
+  "data_access": [
+    "user-private",
+    "sensitive"
+  ],
+  "network_policy": "local-first",
+  "offline_support": false,
+  "dependencies": []
+}
