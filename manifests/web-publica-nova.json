@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "id": "web-publica-nova",
+  "name": "Web Pública Nova",
+  "version": "0.1.0",
+  "kind": "website",
+  "lifecycle": "active",
+  "repository": {
+    "url": "https://github.com/Cumba35/Web-Publica-Nova",
+    "default_branch": "main"
+  },
+  "capabilities": [
+    "public.portal",
+    "public.microsites",
+    "public.navigation"
+  ],
+  "permissions": [
+    {
+      "resource": "public.content",
+      "action": "read",
+      "scope": "ecosystem",
+      "approval": false
+    },
+    {
+      "resource": "public.content",
+      "action": "publish",
+      "scope": "owner-only",
+      "approval": true
+    }
+  ],
+  "data_access": [
+    "public"
+  ],
+  "network_policy": "online-required",
+  "offline_support": false,
+  "dependencies": []
+}
