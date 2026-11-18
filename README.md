@@ -126,7 +126,7 @@ Durante la inspección no había perfiles ni muestras biométricas, consentimien
 
 ## Validación de RLS social heredada — 18 de noviembre de 2026
 
-La auditoría inicial de comentarios/reacciones se corrigió tras una prueba transaccional en NOVA-STAGING: las subconsultas a la publicación padre sí aplican su RLS; el escenario privado bloqueó lecturas y escrituras hijas, mientras que el escenario público permitió las lecturas esperadas. No se cambió ninguna política. Evidencia y test rollback-only: [auditoría](docs/LEGACY-SUPABASE-SOCIAL-RLS-VALIDATION-2026-11-18.md) y [SQL de regresión](tests/legacy_supabase/nova_social_parent_rls_smoke.sql).
+La auditoría inicial de comentarios/reacciones se corrigió tras una prueba transaccional en NOVA-STAGING: las subconsultas a la publicación padre sí aplican su RLS; el test rollback-only verificó escenarios privado, público, seguidores aceptados, bloqueos en ambas direcciones y rechazo de escrituras hijas sobre publicaciones invisibles. No se cambió ninguna política. Evidencia y test rollback-only: [auditoría](docs/LEGACY-SUPABASE-SOCIAL-RLS-VALIDATION-2026-11-18.md) y [SQL de regresión](tests/legacy_supabase/nova_social_parent_rls_smoke.sql).
 
 ## Estado operativo de Nova IA
 
