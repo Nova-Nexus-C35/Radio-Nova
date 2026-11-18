@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "id": "nova-wifi-manager",
+  "name": "Nova WiFi Manager",
+  "version": "0.1.0",
+  "kind": "application",
+  "lifecycle": "proposed",
+  "repository": {
+    "url": "https://github.com/Cumba35/Nova-Workspace",
+    "default_branch": "main"
+  },
+  "capabilities": [
+    "wifi.network.status",
+    "wifi.device.management"
+  ],
+  "permissions": [
+    {
+      "resource": "network.status",
+      "action": "read",
+      "scope": "self",
+      "approval": false
+    },
+    {
+      "resource": "network.settings",
+      "action": "update",
+      "scope": "self",
+      "approval": true
+    }
+  ],
+  "data_access": [
+    "sensitive"
+  ],
+  "network_policy": "offline-only",
+  "offline_support": true,
+  "dependencies": []
+}
