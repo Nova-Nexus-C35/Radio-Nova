@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "id": "nova-bank",
+  "name": "Nova Bank",
+  "version": "0.1.0",
+  "kind": "application",
+  "lifecycle": "in-development",
+  "repository": {
+    "url": "https://github.com/Cumba35/Nova-Bank",
+    "default_branch": "main"
+  },
+  "capabilities": [
+    "finance.ledger",
+    "finance.accounts",
+    "finance.reconciliation"
+  ],
+  "permissions": [
+    {
+      "resource": "ledger",
+      "action": "read",
+      "scope": "self",
+      "approval": false
+    },
+    {
+      "resource": "transfers",
+      "action": "create",
+      "scope": "self",
+      "approval": true
+    },
+    {
+      "resource": "ledger",
+      "action": "export",
+      "scope": "self",
+      "approval": true
+    },
+    {
+      "resource": "accounts",
+      "action": "admin",
+      "scope": "owner-only",
+      "approval": true
+    }
+  ],
+  "data_access": [
+    "financial",
+    "sensitive"
+  ],
+  "network_policy": "local-first",
+  "offline_support": false,
+  "dependencies": []
+}
