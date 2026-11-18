@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_DIR = ROOT / "manifests"
 ID_RE = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")
-VERSION_RE = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9]*)(?:-[0-9A-Za-z.-]+)?$")
+VERSION_RE = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?$")
 SECRET_KEYS = {"token","password","secret","api_key","private_key","credential","service_role","authorization","bearer","client_secret"}
 ROOT_KEYS = {"schema_version","id","name","version","kind","lifecycle","repository","capabilities","permissions","data_access","network_policy","offline_support","dependencies"}
 PERMISSION_KEYS = {"resource","action","scope","approval"}
