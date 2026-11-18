@@ -26,5 +26,9 @@ class ManifestValidationTests(unittest.TestCase):
   data={**VALID,"kind":[],"lifecycle":{},"data_access":[[]],"network_policy":{},"permissions":[{"resource":"demo","action":[],"scope":{},"approval":False}]}
   self.assertTrue(validate(data))
 
+ def test_financial_mutation_requires_approval(self):
+  data={**VALID,"data_access":["financial"],"permissions":[{"resource":"ledger.entries","action":"create","scope":"self","approval":False}]}
+  self.assertTrue(any("financial/biometric" in e for e in validate(data)))
+
 if __name__ == "__main__":
  unittest.main()
