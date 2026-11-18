@@ -18,8 +18,6 @@ SCOPES = {"self","participant","group","tenant","ecosystem","owner-only"}
 DATA_CLASSES = {"public","user-private","sensitive","financial","biometric"}
 NETWORK_POLICIES = {"offline-only","local-first","online-required"}
 APPROVAL_ACTIONS = {"delete","publish","export","admin"}
-FINANCIAL_CLASSES = {"financial"}
-BIOMETRIC_CLASSES = {"biometric"}
 
 def add(errors, where, message):
     errors.append(f"{where}: {message}")
@@ -71,6 +69,7 @@ def validate(data, where="manifest"):
             if not isinstance(p.get("scope"),str) or p.get("scope") not in SCOPES: add(errors,loc,"invalid scope")
             if not isinstance(p.get("approval"),bool): add(errors,loc,"approval must be boolean")
             elif isinstance(p.get("action"),str) and p.get("action") in APPROVAL_ACTIONS and p["approval"] is not True: add(errors,loc,"sensitive action requires explicit approval")
+            elif isinstance(p.get("action"),str) and p.get("action") in {"create","update","delete","export","admin"} and isinstance(data.get("data_access"),list) and any(isinstance(x,str) and x in {"financial","biometric"} for x in data["data_access"]) and p["approval"] is not True: add(errors,loc,"financial/biometric data operations require explicit approval")
     data_access = data.get("data_access")
     if not isinstance(data_access,list) or any(not isinstance(x,str) or x not in DATA_CLASSES for x in data_access): add(errors,where,"invalid data_access classification")
     elif len(set(data_access)) != len(data_access): add(errors,where,"data_access must be unique")
