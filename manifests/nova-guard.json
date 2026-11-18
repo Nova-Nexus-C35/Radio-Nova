@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "id": "nova-guard",
+  "name": "Nova Guard",
+  "version": "0.1.0",
+  "kind": "library",
+  "lifecycle": "in-development",
+  "repository": {
+    "url": "https://github.com/Cumba35/Nova-Guard",
+    "default_branch": "main"
+  },
+  "capabilities": [
+    "security.contracts",
+    "security.policy",
+    "security.audit"
+  ],
+  "permissions": [
+    {
+      "resource": "security.policies",
+      "action": "read",
+      "scope": "owner-only",
+      "approval": false
+    },
+    {
+      "resource": "security.policies",
+      "action": "admin",
+      "scope": "owner-only",
+      "approval": true
+    },
+    {
+      "resource": "security.audit",
+      "action": "export",
+      "scope": "owner-only",
+      "approval": true
+    }
+  ],
+  "data_access": [
+    "sensitive",
+    "biometric"
+  ],
+  "network_policy": "local-first",
+  "offline_support": true,
+  "dependencies": []
+}
