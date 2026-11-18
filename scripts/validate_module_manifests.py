@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Dependency-free static validation for NOVA module manifests."""
 from __future__ import annotations
-import json, re, sys
+import json, re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_DIR = ROOT / "manifests"
 ID_RE = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")
-VERSION_RE = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?$")
+VERSION_RE = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9]*)(?:-[0-9A-Za-z.-]+)?$")
 SECRET_KEYS = {"token","password","secret","api_key","private_key","credential","service_role","authorization","bearer","client_secret"}
 ROOT_KEYS = {"schema_version","id","name","version","kind","lifecycle","repository","capabilities","permissions","data_access","network_policy","offline_support","dependencies"}
 PERMISSION_KEYS = {"resource","action","scope","approval"}
@@ -52,7 +52,8 @@ def validate(data, where="manifest"):
         add(errors, where, "repository must contain url and default_branch only")
     else:
         if not isinstance(repo.get("url"), str) or not re.fullmatch(r"https://github\.com/Cumba35/[A-Za-z0-9._-]+", repo["url"]): add(errors, where, "repository.url must point to Cumba35 on GitHub")
-        if not isinstance(repo.get("default_branch"), str) or not repo["default_branch"]: add(errors, where, "repository.default_branch is required")
+        branch = repo.get("default_branch")
+        if not isinstance(branch, str) or not 1 <= len(branch) <= 80: add(errors, where, "repository.default_branch must contain 1..80 characters")
     caps = data.get("capabilities")
     if not isinstance(caps, list) or any(not isinstance(x,str) or not re.fullmatch(r"[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*",x) for x in caps): add(errors, where, "invalid capabilities")
     elif len(set(caps)) != len(caps): add(errors, where, "capabilities must be unique")
@@ -81,7 +82,7 @@ def validate(data, where="manifest"):
         for i,d in enumerate(deps):
             loc=f"{where}.dependencies[{i}]"
             if not isinstance(d,dict) or set(d) != {"id","version_range","optional"}: add(errors,loc,"invalid dependency shape")
-            elif not isinstance(d.get("id"),str) or not ID_RE.fullmatch(d.get("id","")) or not isinstance(d.get("version_range"),str) or not isinstance(d.get("optional"),bool): add(errors,loc,"invalid dependency values")
+            elif not isinstance(d.get("id"),str) or not ID_RE.fullmatch(d.get("id","")) or not isinstance(d.get("version_range"),str) or not 1 <= len(d.get("version_range","")) <= 40 or not isinstance(d.get("optional"),bool): add(errors,loc,"invalid dependency values")
     check_secrets(data,where,errors)
     return errors
 
@@ -93,7 +94,6 @@ def duplicate_manifest_ids(manifests):
         if not isinstance(data, dict):
             continue
         module_id = data.get("id")
-        # Invalid types are reported by validate(); never use them as set keys.
         if not isinstance(module_id, str) or not ID_RE.fullmatch(module_id):
             continue
         if module_id in seen:
@@ -101,7 +101,6 @@ def duplicate_manifest_ids(manifests):
         else:
             seen.add(module_id)
     return errors
-
 
 def main():
     paths=sorted(MANIFEST_DIR.glob("*.json"))
