@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "id": "multimedia-nova",
+  "name": "Multimedia Nova",
+  "version": "0.1.0",
+  "kind": "module",
+  "lifecycle": "in-development",
+  "repository": {
+    "url": "https://github.com/Cumba35/Multimedia-Nova",
+    "default_branch": "main"
+  },
+  "capabilities": [
+    "files.local",
+    "files.import",
+    "files.export",
+    "dropbox.user-authorized"
+  ],
+  "permissions": [
+    {
+      "resource": "files",
+      "action": "read",
+      "scope": "self",
+      "approval": false
+    },
+    {
+      "resource": "files",
+      "action": "create",
+      "scope": "self",
+      "approval": false
+    },
+    {
+      "resource": "files",
+      "action": "export",
+      "scope": "self",
+      "approval": true
+    },
+    {
+      "resource": "files",
+      "action": "delete",
+      "scope": "self",
+      "approval": true
+    }
+  ],
+  "data_access": [
+    "user-private",
+    "sensitive"
+  ],
+  "network_policy": "local-first",
+  "offline_support": true,
+  "dependencies": []
+}
