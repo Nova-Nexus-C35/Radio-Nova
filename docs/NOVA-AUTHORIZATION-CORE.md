@@ -23,7 +23,7 @@ A manifest permission is a request/declaration, not a grant. A manifest's \`appr
 - Biometric resources are owner-only.
 - Group and tenant boundaries are checked against server-supplied membership/resource metadata.
 - Audit events contain IDs and decision metadata only; never add payloads, secrets, tokens, memory text, or biometric data.
-- No persistence or cache is provided. Revocation is immediate only when the adapter supplies the current grant set on every decision (or uses a rigorously invalidated cache).
+- No persistence or cache is provided. The `authorize(..., grants=...)` argument accepts a fresh authoritative grant snapshot on each request; production adapters must use it so a revoked grant stops authorizing immediately. Omitting it uses the constructor snapshot and is suitable only for tests/static policies.
 
 ## Integration contract
 
