@@ -30,6 +30,14 @@ class ManifestValidationTests(unittest.TestCase):
   data={**VALID,"data_access":["financial"],"permissions":[{"resource":"ledger.entries","action":"create","scope":"self","approval":False}]}
   self.assertTrue(any("financial/biometric" in e for e in validate(data)))
 
+ def test_duplicate_ids_ignore_malformed_unhashable_ids(self):
+  from scripts.validate_module_manifests import duplicate_manifest_ids
+  entries=[("bad.json",{"id":["not","hashable"]}),("one.json",{"id":"nova-demo"}),("two.json",{"id":"nova-demo"})]
+  errors=duplicate_manifest_ids(entries)
+  self.assertEqual(len(errors),1)
+  self.assertIn("two.json",errors[0])
+  self.assertIn("nova-demo",errors[0])
+
  def test_accepts_existing_project_slug(self):
   self.assertEqual(validate({**VALID,"id":"contador-cup"}), [])
 
