@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "id": "nova-ecommerce",
+  "name": "Nova E-commerce",
+  "version": "0.1.0",
+  "kind": "application",
+  "lifecycle": "in-development",
+  "repository": {
+    "url": "https://github.com/Cumba35/Nova-E-commerce",
+    "default_branch": "main"
+  },
+  "capabilities": [
+    "commerce.catalog",
+    "commerce.orders",
+    "commerce.stores"
+  ],
+  "permissions": [
+    {
+      "resource": "catalog",
+      "action": "read",
+      "scope": "ecosystem",
+      "approval": false
+    },
+    {
+      "resource": "orders",
+      "action": "create",
+      "scope": "self",
+      "approval": false
+    },
+    {
+      "resource": "stores",
+      "action": "publish",
+      "scope": "self",
+      "approval": true
+    },
+    {
+      "resource": "financial.orders",
+      "action": "export",
+      "scope": "self",
+      "approval": true
+    }
+  ],
+  "data_access": [
+    "user-private",
+    "financial"
+  ],
+  "network_policy": "local-first",
+  "offline_support": false,
+  "dependencies": []
+}
