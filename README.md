@@ -8,7 +8,7 @@ Repositorio privado: https://github.com/Cumba35/Nova-Guard
 
 Nova Guard gobierna las políticas, los esquemas, las migraciones, los permisos, la auditoría y los contratos de almacenamiento seguro de Nova. No es un almacén Git para contraseñas, claves privadas, fotografías faciales ni datos biométricos en claro.
 
-**Los datos privados reales se almacenan fuera del historial Git**, en servicios privados autenticados. El proyecto Supabase Nova-Nexus conserva actualmente la base de datos y Storage; Nova Guard versiona su arquitectura y las migraciones de seguridad. El objetivo de la integración es que Nova IA y los clientes Nova accedan a los datos cifrados únicamente mediante permisos explícitos, mínimos y revocables.
+**Los datos privados reales nunca se almacenan en GitHub.** La infraestructura Supabase heredada conserva actualmente recursos históricos, pero queda congelada para nuevas funciones y no debe ampliarse ni borrarse durante la transición. Nova Guard versiona contratos y políticas para el futuro núcleo propio de NOVA. El objetivo es que Nova IA y los clientes accedan a los datos cifrados únicamente mediante permisos explícitos, mínimos y revocables.
 
 Un repositorio GitHub privado no equivale a una bóveda cifrada: commits, clones, cachés y copias pueden conservar archivos incluso después de borrarlos de la rama principal.
 
@@ -23,7 +23,7 @@ La validación de contratos todavía no se ha ejecutado en un runner ni equivale
 | Capa | Función |
 |---|---|
 | Nova Guard (este repositorio) | Fuente canónica de políticas, contratos, migraciones, documentación y pruebas de seguridad. |
-| Supabase privado | Base de datos y almacenamiento de objetos cifrados, con RLS y políticas de Storage. |
+| Persistencia heredada | Recursos Supabase históricos, congelados para nuevas funciones hasta una migración NOVA verificada. |
 | Nova Password Manager | Bóveda de credenciales cifradas en el cliente; la clave maestra no se envía al servidor. |
 | Nova IA | Consumidor autorizado de datos estrictamente necesarios, sin acceso general a credenciales ni claves. |
 | Clientes Android | Cifrado antes de subir, autenticación reforzada y claves locales protegidas por Android Keystore. |
@@ -49,7 +49,7 @@ Nova IA no debe realizar identificación facial de terceros ni convertir imágen
 
 ## Datos y servicios existentes
 
-- Base de datos: proyecto Supabase Nova-Nexus.
+- Base de datos heredada: proyecto Supabase Nova-Nexus (no ampliar ni borrar durante la migración).
 - Bóveda de contraseñas: `nova_password_vaults` y `nova_password_entries`, con cifrado de cliente y RLS forzado.
 - Bóveda personal cifrada existente: `nova_private_personal_vaults` y `nova_private_personal_records`.
 - Memoria de usuario: `nova_user_memory_items`, servida por las funciones `nova-memory` y `nova-ia`.
@@ -139,3 +139,8 @@ La auditoría del 10 de noviembre de 2026 confirmó que `nova-ia-api` está prov
 Este estado debe actualizarse con commits y resultados de pruebas verificables, no con estimaciones.
 
 Las alternativas gratuitas sin tarjeta para CI/CD y hosting, con límites y plan de migración, están documentadas en [docs/FREE-NO-CARD-ALTERNATIVES.md](docs/FREE-NO-CARD-ALTERNATIVES.md).
+
+
+## Política de transición del propietario — 2026-11-18
+
+GitHub y ChatGPT son las herramientas autorizadas para desarrollar y mantener NOVA. Dropbox se conserva como excepción aprobada para archivos, copias y recuperación con acciones explícitas y credenciales seguras. No incorporar nuevos proveedores externos. Los servicios heredados (incluido Supabase/Railway/Google Drive) no se amplían; conservar datos y operaciones existentes hasta sustituirlos de forma probada. No crear ni activar workflows automáticos en repositorios privados NOVA. Las autenticaciones existentes pueden mantenerse y repararse; esta regla no prohíbe autenticación.
