@@ -12,6 +12,10 @@ La política nova_social_posts_read_visible aplica visibilidad pública/seguidor
 
 **Conclusión corregida:** la hipótesis de fuga por esas políticas hijas no quedó demostrada y la prueba de regresión en staging la contradijo. No aplicar una migración para cambiar esas políticas basándose en la hipótesis anterior.
 
+## Comparación de políticas entre entornos
+
+Se calculó una huella MD5 sobre la representación ordenada de todas las políticas RLS cuyo nombre de tabla comienza por `nova_social_` en producción y staging. Ambos entornos devolvieron 30 políticas y la misma huella `c6d7a833d6629e66a2820b4df3d23a57`. Esto demuestra que las expresiones de las 30 políticas sociales inspeccionadas coinciden entre ambos entornos en el momento de la consulta; no demuestra por sí solo que cada política sea correcta ni reemplaza las pruebas de operaciones.
+
 ## Verificación ejecutada en NOVA-STAGING
 
 Proyecto: NOVA-STAGING, PostgreSQL 17.11.0.019.
