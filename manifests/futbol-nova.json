@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "id": "futbol-nova",
+  "name": "Fútbol Nova",
+  "version": "0.1.0",
+  "kind": "game",
+  "lifecycle": "in-development",
+  "repository": {
+    "url": "https://github.com/Cumba35/Nova-Workspace",
+    "default_branch": "main"
+  },
+  "capabilities": [
+    "game.football.manager",
+    "game.offline",
+    "game.modules"
+  ],
+  "permissions": [
+    {
+      "resource": "saves",
+      "action": "read",
+      "scope": "self",
+      "approval": false
+    },
+    {
+      "resource": "saves",
+      "action": "update",
+      "scope": "self",
+      "approval": false
+    }
+  ],
+  "data_access": [
+    "user-private"
+  ],
+  "network_policy": "offline-only",
+  "offline_support": true,
+  "dependencies": []
+}
