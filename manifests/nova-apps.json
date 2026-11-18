@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "id": "nova-apps",
+  "name": "Nova Apps",
+  "version": "0.1.0",
+  "kind": "website",
+  "lifecycle": "in-development",
+  "repository": {
+    "url": "https://github.com/Cumba35/Nova-APPS",
+    "default_branch": "main"
+  },
+  "capabilities": [
+    "catalog.apps",
+    "catalog.modules",
+    "publishing.review"
+  ],
+  "permissions": [
+    {
+      "resource": "catalog",
+      "action": "read",
+      "scope": "ecosystem",
+      "approval": false
+    },
+    {
+      "resource": "applications",
+      "action": "publish",
+      "scope": "self",
+      "approval": true
+    },
+    {
+      "resource": "applications",
+      "action": "delete",
+      "scope": "self",
+      "approval": true
+    }
+  ],
+  "data_access": [
+    "public",
+    "user-private"
+  ],
+  "network_policy": "local-first",
+  "offline_support": false,
+  "dependencies": []
+}
