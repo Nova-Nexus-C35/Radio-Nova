@@ -12,6 +12,12 @@ Nova Guard gobierna las políticas, los esquemas, las migraciones, los permisos,
 
 Un repositorio GitHub privado no equivale a una bóveda cifrada: commits, clones, cachés y copias pueden conservar archivos incluso después de borrarlos de la rama principal.
 
+## Contratos compartidos NOVA — 18 de noviembre de 2026
+
+Se añadió el contrato versionado de manifiestos de módulos en [contracts/nova-module-manifest.schema.json](contracts/nova-module-manifest.schema.json), tres manifiestos de referencia en manifests/, y el validador sin dependencias externas scripts/validate_module_manifests.py con pruebas en tests/. Estos archivos describen capacidades y permisos solicitados; **no conceden permisos ni sustituyen la autorización en servidor**. Las acciones delete, publish, export y admin exigen aprobación explícita. Los campos desconocidos y los campos de credenciales se rechazan.
+
+La validación de contratos todavía no se ha ejecutado en un runner ni equivale a pruebas de autorización. Véase [docs/CONTRATOS-COMUNES-NOVA.md](docs/CONTRATOS-COMUNES-NOVA.md).
+
 ## Arquitectura
 
 | Capa | Función |
