@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "id": "nova-novels",
+  "name": "Nova Novels",
+  "version": "0.1.0",
+  "kind": "website",
+  "lifecycle": "in-development",
+  "repository": {
+    "url": "https://github.com/Cumba35/Nova-Novels",
+    "default_branch": "main"
+  },
+  "capabilities": [
+    "publishing.catalog",
+    "writers.portal",
+    "rights.review"
+  ],
+  "permissions": [
+    {
+      "resource": "published.works",
+      "action": "read",
+      "scope": "ecosystem",
+      "approval": false
+    },
+    {
+      "resource": "manuscripts",
+      "action": "create",
+      "scope": "self",
+      "approval": false
+    },
+    {
+      "resource": "works",
+      "action": "publish",
+      "scope": "self",
+      "approval": true
+    },
+    {
+      "resource": "manuscripts",
+      "action": "export",
+      "scope": "self",
+      "approval": true
+    }
+  ],
+  "data_access": [
+    "user-private",
+    "sensitive"
+  ],
+  "network_policy": "local-first",
+  "offline_support": false,
+  "dependencies": []
+}
