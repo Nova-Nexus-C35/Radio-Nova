@@ -45,8 +45,8 @@ def validate(data, where="manifest"):
     if not isinstance(data.get("id"), str) or not ID_RE.fullmatch(data.get("id","")): add(errors, where, "invalid NOVA id")
     if not isinstance(data.get("name"), str) or not 2 <= len(data.get("name","")) <= 80: add(errors, where, "name must contain 2..80 characters")
     if not isinstance(data.get("version"), str) or not VERSION_RE.fullmatch(data.get("version","")): add(errors, where, "version must be semantic X.Y.Z")
-    if data.get("kind") not in KINDS: add(errors, where, "invalid kind")
-    if data.get("lifecycle") not in LIFECYCLES: add(errors, where, "invalid lifecycle")
+    if not isinstance(data.get("kind"),str) or data.get("kind") not in KINDS: add(errors, where, "invalid kind")
+    if not isinstance(data.get("lifecycle"),str) or data.get("lifecycle") not in LIFECYCLES: add(errors, where, "invalid lifecycle")
     repo = data.get("repository")
     if not isinstance(repo, dict) or set(repo) != {"url","default_branch"}:
         add(errors, where, "repository must contain url and default_branch only")
@@ -65,14 +65,14 @@ def validate(data, where="manifest"):
                 add(errors, loc, "permission must contain resource, action, scope and approval only")
                 continue
             if not isinstance(p.get("resource"),str) or not re.fullmatch(r"[a-z][a-z0-9_.-]*",p["resource"]): add(errors,loc,"invalid resource")
-            if p.get("action") not in ACTIONS: add(errors,loc,"invalid action")
-            if p.get("scope") not in SCOPES: add(errors,loc,"invalid scope")
+            if not isinstance(p.get("action"),str) or p.get("action") not in ACTIONS: add(errors,loc,"invalid action")
+            if not isinstance(p.get("scope"),str) or p.get("scope") not in SCOPES: add(errors,loc,"invalid scope")
             if not isinstance(p.get("approval"),bool): add(errors,loc,"approval must be boolean")
             elif p.get("action") in APPROVAL_ACTIONS and p["approval"] is not True: add(errors,loc,"sensitive action requires explicit approval")
     data_access = data.get("data_access")
-    if not isinstance(data_access,list) or any(x not in DATA_CLASSES for x in data_access): add(errors,where,"invalid data_access classification")
+    if not isinstance(data_access,list) or any(not isinstance(x,str) or x not in DATA_CLASSES for x in data_access): add(errors,where,"invalid data_access classification")
     elif len(set(data_access)) != len(data_access): add(errors,where,"data_access must be unique")
-    if data.get("network_policy") not in NETWORK_POLICIES: add(errors,where,"invalid network_policy")
+    if not isinstance(data.get("network_policy"),str) or data.get("network_policy") not in NETWORK_POLICIES: add(errors,where,"invalid network_policy")
     if not isinstance(data.get("offline_support"),bool): add(errors,where,"offline_support must be boolean")
     deps = data.get("dependencies",[])
     if not isinstance(deps,list): add(errors,where,"dependencies must be an array")
@@ -80,7 +80,7 @@ def validate(data, where="manifest"):
         for i,d in enumerate(deps):
             loc=f"{where}.dependencies[{i}]"
             if not isinstance(d,dict) or set(d) != {"id","version_range","optional"}: add(errors,loc,"invalid dependency shape")
-            elif not ID_RE.fullmatch(str(d.get("id",""))) or not isinstance(d.get("version_range"),str) or not isinstance(d.get("optional"),bool): add(errors,loc,"invalid dependency values")
+            elif not isinstance(d.get("id"),str) or not ID_RE.fullmatch(d.get("id","")) or not isinstance(d.get("version_range"),str) or not isinstance(d.get("optional"),bool): add(errors,loc,"invalid dependency values")
     check_secrets(data,where,errors)
     return errors
 
