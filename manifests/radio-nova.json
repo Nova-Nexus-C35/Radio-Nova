@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "id": "radio-nova",
+  "name": "Radio Nova",
+  "version": "0.1.0",
+  "kind": "application",
+  "lifecycle": "proposed",
+  "repository": {
+    "url": "https://github.com/Cumba35/Nova-Workspace",
+    "default_branch": "main"
+  },
+  "capabilities": [
+    "radio.fm.am",
+    "radio.offline.hardware-dependent"
+  ],
+  "permissions": [
+    {
+      "resource": "tuner",
+      "action": "execute",
+      "scope": "self",
+      "approval": false
+    }
+  ],
+  "data_access": [
+    "public"
+  ],
+  "network_policy": "offline-only",
+  "offline_support": true,
+  "dependencies": []
+}
