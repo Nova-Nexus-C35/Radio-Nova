@@ -30,5 +30,8 @@ class ManifestValidationTests(unittest.TestCase):
   data={**VALID,"data_access":["financial"],"permissions":[{"resource":"ledger.entries","action":"create","scope":"self","approval":False}]}
   self.assertTrue(any("financial/biometric" in e for e in validate(data)))
 
+ def test_accepts_existing_project_slug(self):
+  self.assertEqual(validate({**VALID,"id":"contador-cup"}), [])
+
 if __name__ == "__main__":
  unittest.main()
