@@ -27,11 +27,13 @@ Con el rol authenticated y los claims JWT de B se verificó:
 3. La reacción de A no es visible.
 4. La publicación pública de C sí es visible.
 5. El comentario y la reacción de C sí son visibles.
-6. INSERT de comentario, reacción y marcador sobre la publicación invisible de A es rechazado por RLS.
+6. Una publicación de seguidores de D y su comentario sí son visibles para B porque existe un follow aceptado.
+7. Las publicaciones y comentarios de E y F no son visibles cuando B bloquea a E o F bloquea a B, respectivamente.
+8. INSERT de comentario, reacción y marcador sobre la publicación invisible de A es rechazado por RLS.
 
 Resultado devuelto por PostgreSQL:
 
-PASS: parent RLS blocks private child reads/writes and permits public child reads
+PASS: private/public/follower/block parent visibility is inherited by child reads; invisible-parent child writes are denied
 
 La transacción terminó con ROLLBACK; no quedaron usuarios, perfiles, publicaciones, comentarios ni reacciones de prueba. No se modificaron políticas, datos persistentes, extensiones ni configuración de Supabase.
 
@@ -50,11 +52,11 @@ La extensión pgTAP no estaba instalada en staging durante esta auditoría; por 
 - https://github.com/unitautogen/rlsautotest (Apache-2.0): candidato de auditoría automatizada, actualmente beta. Su documentación advierte usar una copia desechable porque genera datos y ejecuta probes de operaciones.
 - https://github.com/joseafg94/supabase-rls-recipes (MIT): buenas prácticas de threat model, pruebas negativas, permisos y guía de despliegue. Se utilizó como referencia de diseño, no se copió código.
 
-La documentación oficial de Supabase recomienda ejecutar pruebas RLS contra una base local y comprobar también las operaciones de escritura. El smoke test aquí añadido cubre el caso concreto que originó la hipótesis, pero no reemplaza una matriz completa de permisos para todas las tablas sociales.
+La documentación oficial de Supabase recomienda ejecutar pruebas RLS contra una base local y comprobar también las operaciones de escritura. El smoke test aquí añadido cubre perfil privado, publicación pública, follow aceptado, bloqueos en ambas direcciones y escritura sobre padre invisible. No reemplaza una matriz completa de permisos para todas las tablas sociales ni prueba UPDATE/DELETE.
 
 ## Pendientes reales
 
-- [ ] Completar matriz de pruebas para follows aceptados/pendientes, bloqueos en ambas direcciones, posts no publicados, edición y borrado de comentarios/reacciones.
+- [ ] Completar matriz de pruebas para follows pendientes, posts no publicados, edición y borrado de comentarios/reacciones.
 - [ ] Auditar todas las tablas sociales y sus grants, no solo las cuatro tablas revisadas.
 - [ ] Revisar vistas, funciones SECURITY DEFINER, RPC, Edge Functions y Storage como superficies de bypass independientes.
 - [ ] Mantener Supabase heredado congelado; cualquier transición debe seguir el plan de Nova Guard, con pruebas, backup y recuperación.
@@ -62,4 +64,4 @@ La documentación oficial de Supabase recomienda ejecutar pruebas RLS contra una
 
 ## Estado
 
-**La hipótesis de fuga por herencia de RLS de la publicación padre queda refutada para el escenario probado en staging. No se aplicó cambio de política. El test rollback-only y esta auditoría quedan versionados en Nova Guard. La auditoría social completa sigue pendiente.**
+**La hipótesis de fuga por herencia de RLS de la publicación padre queda refutada para los escenarios probados en staging: privado, público, seguidor aceptado y bloqueos en ambas direcciones. También se comprobó el rechazo de INSERT en tablas hijas para un padre invisible. No se aplicó cambio de política. El test rollback-only y esta auditoría quedan versionados en Nova Guard. La auditoría social completa sigue pendiente.**
