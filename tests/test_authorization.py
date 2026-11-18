@@ -87,6 +87,17 @@ class AuthorizationEngineTests(unittest.TestCase):
         self.assertEqual(engine.authorize(Principal("alice", True), request()).reason,
                          "no-active-grant")
 
+    def test_fresh_grant_snapshot_revokes_access_immediately(self):
+        grant = self.grant()
+        engine = self.engine([grant])
+        principal = Principal("alice", True)
+        self.assertTrue(engine.authorize(principal, request(), grants=[grant]).allowed)
+        self.assertEqual(engine.authorize(principal, request(), grants=[]).reason,
+                         "no-active-grant")
+        self.assertEqual(engine.authorize(
+            principal, request(), grants=[self.grant(revoked=True)]
+        ).reason, "no-active-grant")
+
     def test_expired_grant_is_denied(self):
         engine = self.engine([self.grant(expires_at=NOW)])
         self.assertEqual(engine.authorize(Principal("alice", True), request()).reason,
