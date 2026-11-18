@@ -193,6 +193,11 @@ class AuthorizationEngine:
         if (not isinstance(principal.principal_id, str) or principal.authenticated is not True
                 or not principal.principal_id.strip()):
             return Decision(False, "unauthenticated")
+        if (not isinstance(principal.roles, (set, frozenset))
+                or any(not isinstance(role, str) for role in principal.roles)
+                or not isinstance(principal.group_ids, (set, frozenset))
+                or any(not isinstance(group, str) for group in principal.group_ids)):
+            return Decision(False, "invalid-principal-context")
         if (not isinstance(request.module_id, str) or not request.module_id.strip()
                 or not isinstance(request.action, str) or request.action not in VALID_ACTIONS
                 or not isinstance(request.scope, str) or request.scope not in VALID_SCOPES
@@ -201,7 +206,11 @@ class AuthorizationEngine:
         if (not isinstance(resource.resource_id, str) or not resource.resource_id.strip()
                 or not isinstance(resource.resource_type, str) or not resource.resource_type.strip()
                 or not isinstance(resource.sensitivity, str)
-                or resource.sensitivity not in VALID_SENSITIVITY):
+                or resource.sensitivity not in VALID_SENSITIVITY
+                or not isinstance(resource.group_ids, (set, frozenset))
+                or any(not isinstance(group, str) for group in resource.group_ids)
+                or not isinstance(resource.participant_ids, (set, frozenset))
+                or any(not isinstance(pid, str) for pid in resource.participant_ids)):
             return Decision(False, "invalid-resource")
         module = self._modules.get(request.module_id)
         if module is None:
@@ -235,6 +244,14 @@ class AuthorizationEngine:
 
         for grant in self._grants:
             if not isinstance(grant, Grant) or grant.revoked is not False:
+                continue
+            if (not isinstance(grant.grant_id, str) or not grant.grant_id
+                    or not isinstance(grant.resource, str)
+                    or not isinstance(grant.action, str) or not isinstance(grant.scope, str)
+                    or (grant.principal_id is None) == (grant.role is None)
+                    or (grant.principal_id is not None and not isinstance(grant.principal_id, str))
+                    or (grant.role is not None and not isinstance(grant.role, str))
+                    or (grant.tenant_id is not None and not isinstance(grant.tenant_id, str))):
                 continue
             if grant.expires_at is not None:
                 if not isinstance(grant.expires_at, (int, float)) or not isfinite(grant.expires_at):
