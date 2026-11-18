@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NOVA Module Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "name",
+    "version",
+    "kind",
+    "lifecycle",
+    "repository",
+    "capabilities",
+    "permissions",
+    "data_access",
+    "network_policy",
+    "offline_support"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^nova-[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 80
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?$"
+    },
+    "kind": {
+      "enum": [
+        "application",
+        "module",
+        "model",
+        "website",
+        "game",
+        "library"
+      ]
+    },
+    "lifecycle": {
+      "enum": [
+        "proposed",
+        "in-development",
+        "preview",
+        "active",
+        "retired"
+      ]
+    },
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url",
+        "default_branch"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "pattern": "^https://github\\.com/Cumba35/[A-Za-z0-9._-]+$"
+        },
+        "default_branch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$"
+      }
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "resource",
+          "action",
+          "scope",
+          "approval"
+        ],
+        "properties": {
+          "resource": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]*$"
+          },
+          "action": {
+            "enum": [
+              "read",
+              "create",
+              "update",
+              "delete",
+              "publish",
+              "export",
+              "sync",
+              "execute",
+              "admin"
+            ]
+          },
+          "scope": {
+            "enum": [
+              "self",
+              "participant",
+              "group",
+              "tenant",
+              "ecosystem",
+              "owner-only"
+            ]
+          },
+          "approval": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "data_access": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "public",
+          "user-private",
+          "sensitive",
+          "financial",
+          "biometric"
+        ]
+      }
+    },
+    "network_policy": {
+      "enum": [
+        "offline-only",
+        "local-first",
+        "online-required"
+      ]
+    },
+    "offline_support": {
+      "type": "boolean"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "version_range",
+          "optional"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^nova-[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "version_range": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "optional": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}
