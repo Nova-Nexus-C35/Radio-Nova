@@ -176,15 +176,21 @@ class AuthorizationEngine:
         return True
 
     def _decide(self, principal: Principal, request: AuthorizationRequest) -> Decision:
-        resource = request.resource
         if not isinstance(principal, Principal) or not isinstance(request, AuthorizationRequest):
             return Decision(False, "invalid-request")
-        if not principal.authenticated or not principal.principal_id.strip():
+        resource = request.resource
+        if not isinstance(resource, Resource):
+            return Decision(False, "invalid-resource")
+        if not isinstance(principal.principal_id, str) or not principal.authenticated or not principal.principal_id.strip():
             return Decision(False, "unauthenticated")
-        if (not request.module_id or not request.action or request.action not in VALID_ACTIONS
-                or request.scope not in VALID_SCOPES):
+        if (not isinstance(request.module_id, str) or not request.module_id.strip()
+                or not isinstance(request.action, str) or request.action not in VALID_ACTIONS
+                or not isinstance(request.scope, str) or request.scope not in VALID_SCOPES
+                or not isinstance(request.now, (int, float))):
             return Decision(False, "invalid-action-or-scope")
-        if (not resource.resource_id or not resource.resource_type
+        if (not isinstance(resource.resource_id, str) or not resource.resource_id.strip()
+                or not isinstance(resource.resource_type, str) or not resource.resource_type.strip()
+                or not isinstance(resource.sensitivity, str)
                 or resource.sensitivity not in VALID_SENSITIVITY):
             return Decision(False, "invalid-resource")
         module = self._modules.get(request.module_id)
