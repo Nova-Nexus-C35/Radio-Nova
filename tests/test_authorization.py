@@ -141,6 +141,18 @@ class AuthorizationEngineTests(unittest.TestCase):
         self.assertFalse(engine.authorize(Principal("alice", True),
                                           request(action="update", approval=evidence)).allowed)
 
+    def test_malformed_approval_fails_closed_without_exception(self):
+        engine = self.engine([self.grant(resource="docs.*", action="update")])
+        bad = ApprovalEvidence(None, "alice", "res-1", "update", True)
+        self.assertEqual(engine.authorize(Principal("alice", True),
+                                          request(action="update", approval=bad)).reason,
+                         "approval-required-or-invalid")
+
+    def test_non_finite_request_time_fails_closed(self):
+        bad = AuthorizationRequest("nova-demo", resource(), "read", "self", float("nan"))
+        self.assertEqual(self.engine().authorize(Principal("alice", True), bad).reason,
+                         "invalid-action-or-scope")
+
     def test_biometric_data_owner_only(self):
         module = ModulePolicy("nova-demo", (PermissionDeclaration(
             "vault.*", "read", "self"),), frozenset({"biometric"}))
