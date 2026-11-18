@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "id": "nova-social-bridge",
+  "name": "NOVA Social Bridge",
+  "version": "0.1.0",
+  "kind": "module",
+  "lifecycle": "in-development",
+  "repository": {
+    "url": "https://github.com/Cumba35/Nova-Workspace",
+    "default_branch": "main"
+  },
+  "capabilities": [
+    "social.connectors.official",
+    "social.webhooks.verified",
+    "social.outbox"
+  ],
+  "permissions": [
+    {
+      "resource": "external.accounts",
+      "action": "read",
+      "scope": "self",
+      "approval": false
+    },
+    {
+      "resource": "external.accounts",
+      "action": "sync",
+      "scope": "self",
+      "approval": true
+    },
+    {
+      "resource": "external.messages",
+      "action": "publish",
+      "scope": "self",
+      "approval": true
+    }
+  ],
+  "data_access": [
+    "user-private",
+    "sensitive"
+  ],
+  "network_policy": "online-required",
+  "offline_support": false,
+  "dependencies": []
+}
