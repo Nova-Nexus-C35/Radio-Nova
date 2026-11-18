@@ -50,6 +50,16 @@ class AuthorizationEngineTests(unittest.TestCase):
         self.assertEqual(engine.authorize(Principal("alice", False), request()).reason,
                          "unauthenticated")
 
+    def test_malformed_request_fails_closed_without_exception(self):
+        engine = self.engine([self.grant()])
+        self.assertEqual(engine.authorize(Principal("alice", True), None).reason,
+                         "invalid-request")
+
+    def test_malformed_resource_fails_closed_without_exception(self):
+        bad = AuthorizationRequest("nova-demo", None, "read", "self", NOW)
+        self.assertEqual(self.engine().authorize(Principal("alice", True), bad).reason,
+                         "invalid-resource")
+
     def test_denies_without_grant(self):
         self.assertEqual(self.engine().authorize(Principal("alice", True), request()).reason,
                          "no-active-grant")
