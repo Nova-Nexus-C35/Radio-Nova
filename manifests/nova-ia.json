@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "id": "nova-ia",
+  "name": "NOVA IA",
+  "version": "0.1.0",
+  "kind": "application",
+  "lifecycle": "in-development",
+  "repository": {
+    "url": "https://github.com/Cumba35/Nova-IA",
+    "default_branch": "main"
+  },
+  "capabilities": [
+    "assistant.chat",
+    "inference.gguf.local",
+    "memory.local",
+    "tools.approval-gated"
+  ],
+  "permissions": [
+    {
+      "resource": "memory",
+      "action": "read",
+      "scope": "self",
+      "approval": false
+    },
+    {
+      "resource": "memory",
+      "action": "create",
+      "scope": "self",
+      "approval": true
+    },
+    {
+      "resource": "repository.metadata",
+      "action": "read",
+      "scope": "owner-only",
+      "approval": false
+    },
+    {
+      "resource": "repository.content",
+      "action": "read",
+      "scope": "owner-only",
+      "approval": true
+    }
+  ],
+  "data_access": [
+    "user-private",
+    "sensitive"
+  ],
+  "network_policy": "local-first",
+  "offline_support": true,
+  "dependencies": []
+}
