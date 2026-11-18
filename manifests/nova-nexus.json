@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "id": "nova-nexus",
+  "name": "Nova Nexus",
+  "version": "0.1.0",
+  "kind": "application",
+  "lifecycle": "in-development",
+  "repository": {
+    "url": "https://github.com/Cumba35/Nova-Nexus",
+    "default_branch": "main"
+  },
+  "capabilities": [
+    "ecosystem.registry",
+    "repositories.read",
+    "admin.console"
+  ],
+  "permissions": [
+    {
+      "resource": "projects",
+      "action": "read",
+      "scope": "owner-only",
+      "approval": false
+    },
+    {
+      "resource": "roles",
+      "action": "admin",
+      "scope": "owner-only",
+      "approval": true
+    },
+    {
+      "resource": "publications",
+      "action": "publish",
+      "scope": "ecosystem",
+      "approval": true
+    }
+  ],
+  "data_access": [
+    "user-private",
+    "sensitive"
+  ],
+  "network_policy": "online-required",
+  "offline_support": false,
+  "dependencies": []
+}
