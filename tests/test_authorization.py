@@ -60,6 +60,11 @@ class AuthorizationEngineTests(unittest.TestCase):
         self.assertEqual(self.engine().authorize(Principal("alice", True), bad).reason,
                          "invalid-resource")
 
+    def test_malformed_principal_membership_fails_closed(self):
+        bad_principal = Principal("alice", True, roles=None)
+        self.assertEqual(self.engine().authorize(bad_principal, request()).reason,
+                         "invalid-principal-context")
+
     def test_denies_without_grant(self):
         self.assertEqual(self.engine().authorize(Principal("alice", True), request()).reason,
                          "no-active-grant")
