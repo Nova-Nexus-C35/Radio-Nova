@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "id": "noticias-nova",
+  "name": "Noticias Nova",
+  "version": "0.1.0",
+  "kind": "website",
+  "lifecycle": "in-development",
+  "repository": {
+    "url": "https://github.com/Cumba35/Noticias-Nova",
+    "default_branch": "main"
+  },
+  "capabilities": [
+    "news.editorial",
+    "news.sources",
+    "news.corrections"
+  ],
+  "permissions": [
+    {
+      "resource": "published.articles",
+      "action": "read",
+      "scope": "ecosystem",
+      "approval": false
+    },
+    {
+      "resource": "articles",
+      "action": "create",
+      "scope": "self",
+      "approval": false
+    },
+    {
+      "resource": "articles",
+      "action": "publish",
+      "scope": "ecosystem",
+      "approval": true
+    },
+    {
+      "resource": "corrections",
+      "action": "update",
+      "scope": "self",
+      "approval": false
+    }
+  ],
+  "data_access": [
+    "public",
+    "user-private"
+  ],
+  "network_policy": "online-required",
+  "offline_support": false,
+  "dependencies": []
+}
