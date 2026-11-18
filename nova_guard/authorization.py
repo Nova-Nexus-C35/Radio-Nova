@@ -7,6 +7,7 @@ Principal, Resource, grants, and ApprovalEvidence from trusted server-side sourc
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from math import isfinite
 from typing import Callable, FrozenSet, Iterable, Optional, Tuple
 
 
@@ -121,6 +122,10 @@ AuditSink = Callable[[AuditEvent], None]
 
 
 def _matches_resource(pattern: str, resource: str) -> bool:
+    if not isinstance(pattern, str) or not isinstance(resource, str):
+        return False
+    if not pattern or not resource:
+        return False
     if pattern == resource:
         return True
     if pattern.endswith(".*"):
@@ -156,23 +161,27 @@ class AuthorizationEngine:
         if scope == "ecosystem":
             # No generic "admin" bypass: ecosystem scope is reserved for the
             # explicitly provisioned platform-admin role and grant.
-            return "nova.platform_admin" in principal.roles
+            return isinstance(principal.roles, (set, frozenset)) and "nova.platform_admin" in principal.roles
         return False
 
     @staticmethod
     def _approval_matches(evidence: Optional[ApprovalEvidence],
                           principal: Principal, resource: Resource,
                           action: str, now: float) -> bool:
-        if evidence is None:
+        if not isinstance(evidence, ApprovalEvidence):
             return False
-        if not evidence.approved or not evidence.approval_id.strip():
+        if (evidence.approved is not True or not isinstance(evidence.approval_id, str)
+                or not evidence.approval_id.strip()):
             return False
         if evidence.principal_id != principal.principal_id:
             return False
         if evidence.resource_id != resource.resource_id or evidence.action != action:
             return False
-        if evidence.expires_at is not None and now >= evidence.expires_at:
-            return False
+        if evidence.expires_at is not None:
+            if not isinstance(evidence.expires_at, (int, float)) or not isfinite(evidence.expires_at):
+                return False
+            if now >= evidence.expires_at:
+                return False
         return True
 
     def _decide(self, principal: Principal, request: AuthorizationRequest) -> Decision:
@@ -181,7 +190,8 @@ class AuthorizationEngine:
         resource = request.resource
         if not isinstance(resource, Resource):
             return Decision(False, "invalid-resource")
-        if not isinstance(principal.principal_id, str) or not principal.authenticated or not principal.principal_id.strip():
+        if (not isinstance(principal.principal_id, str) or principal.authenticated is not True
+                or not principal.principal_id.strip()):
             return Decision(False, "unauthenticated")
         if (not isinstance(request.module_id, str) or not request.module_id.strip()
                 or not isinstance(request.action, str) or request.action not in VALID_ACTIONS
@@ -224,10 +234,13 @@ class AuthorizationEngine:
             return Decision(False, "scope-mismatch")
 
         for grant in self._grants:
-            if grant.revoked:
+            if not isinstance(grant, Grant) or grant.revoked is not False:
                 continue
-            if grant.expires_at is not None and request.now >= grant.expires_at:
-                continue
+            if grant.expires_at is not None:
+                if not isinstance(grant.expires_at, (int, float)) or not isfinite(grant.expires_at):
+                    continue
+                if request.now >= grant.expires_at:
+                    continue
             if grant.action != request.action or grant.scope != request.scope:
                 continue
             if not _matches_resource(grant.resource, resource.resource_type):
