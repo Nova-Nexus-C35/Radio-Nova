@@ -144,3 +144,15 @@ Las alternativas gratuitas sin tarjeta para CI/CD y hosting, con límites y plan
 ## Política de transición del propietario — 2026-11-18
 
 GitHub y ChatGPT son las herramientas autorizadas para desarrollar y mantener NOVA. Dropbox se conserva como excepción aprobada para archivos, copias y recuperación con acciones explícitas y credenciales seguras. No incorporar nuevos proveedores externos. Los servicios heredados (incluido Supabase/Railway/Google Drive) no se amplían; conservar datos y operaciones existentes hasta sustituirlos de forma probada. No crear ni activar workflows automáticos en repositorios privados NOVA. Las autenticaciones existentes pueden mantenerse y repararse; esta regla no prohíbe autenticación.
+
+
+### Validación local de manifiestos
+
+Desde la raíz del repositorio, cuando exista un entorno Python autorizado:
+
+```sh
+python scripts/validate_module_manifests.py
+python -m unittest discover -s tests
+```
+
+Estas instrucciones están documentadas, pero esta sesión no ejecutó el intérprete sobre el repositorio. No considerar los contratos verificados hasta ejecutar ambas comprobaciones y revisar los resultados.
