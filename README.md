@@ -160,3 +160,9 @@ Estas instrucciones están documentadas, pero esta sesión no ejecutó el intér
 ## Robustez del validador — 18 de noviembre de 2026
 
 Se corrigió el tratamiento de IDs malformados durante la detección de duplicados: los valores JSON no textuales ya no se usan como claves de conjunto, evitando una excepción inesperada. Se añadió una prueba unitaria para ID no hashable y duplicado válido. Commits: `b38ed721681bf6c0d8265b718fd1a308954d8ccd` y `ee98158f7d13469454f09a106585f670c7245e6d`. La ejecución de las pruebas sigue pendiente; el cambio no se declara probado.
+
+## NOVA Authorization Core — reference implementation (18 November 2026)
+
+Se añadió `nova_guard/authorization.py`, un PDP de referencia sin dependencias externas. Aplica denegación predeterminada, permisos declarados por módulo, clases de datos, alcance por propietario/participante/grupo/tenant/ecosistema, concesiones explícitas con expiración/revocación, evidencia de aprobación ligada a sujeto/recurso/acción y auditoría de metadatos con fallo cerrado si el sink no está disponible. La biometría queda limitada al propietario y el alcance de ecosistema exige el rol y la concesión explícitos `nova.platform_admin`.
+
+Archivos: `nova_guard/authorization.py`, `tests/test_authorization.py` y `docs/NOVA-AUTHORIZATION-CORE.md`. Esta entrega es una biblioteca PDP de referencia, no un servicio desplegado: no contiene proveedor de identidad, almacenamiento autoritativo de concesiones, flujo de aprobación, API ni sink durable. Las pruebas se añadieron pero no se ejecutaron en esta sesión. Por tanto, Nexus debe mantener `runtime_authorization: not-verified` y ninguna aplicación debe tratar este módulo como protección activa hasta integrar y verificar un adaptador de servidor real.
