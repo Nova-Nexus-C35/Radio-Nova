@@ -50,7 +50,7 @@ Credentials, API keys, authentication tokens, payment card data, and recovery co
 
 ## User controls and deletion
 
-The client must provide controls to inspect records, forget an individual record, and clear all local records. Deletion from the local store does not delete a separate cloud record; the UI must describe that boundary clearly. A future optional sync feature must add explicit opt-in, per-account conflict handling, source provenance, revocation, and a verified delete propagation protocol before it is enabled.
+The client must provide controls to inspect records, forget an individual record, and clear all local records. Individual deletion requires successful decryption. Explicit full deletion removes the account's encrypted payload and its Keystore key without attempting to recreate a missing key. Deletion from the local store does not delete a separate cloud record; the UI must describe that boundary clearly. A future optional sync feature must add explicit opt-in, per-account conflict handling, source provenance, revocation, and a verified delete propagation protocol before it is enabled.
 
 ## Verification status
 
