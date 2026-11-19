@@ -170,3 +170,7 @@ Se corrigió el tratamiento de IDs malformados durante la detección de duplicad
 Se añadió `nova_guard/authorization.py`, un PDP de referencia sin dependencias externas. Aplica denegación predeterminada, permisos declarados por módulo, clases de datos, alcance por propietario/participante/grupo/tenant/ecosistema, concesiones explícitas con expiración/revocación, evidencia de aprobación ligada a sujeto/recurso/acción y auditoría de metadatos con fallo cerrado si el sink no está disponible. La biometría queda limitada al propietario y el alcance de ecosistema exige el rol y la concesión explícitos `nova.platform_admin`.
 
 Archivos: `nova_guard/authorization.py`, `tests/test_authorization.py` y `docs/NOVA-AUTHORIZATION-CORE.md`. Esta entrega es una biblioteca PDP de referencia, no un servicio desplegado: no contiene proveedor de identidad, almacenamiento autoritativo de concesiones, flujo de aprobación, API ni sink durable. Las pruebas se añadieron pero no se ejecutaron en esta sesión. Por tanto, Nexus debe mantener `runtime_authorization: not-verified` y ninguna aplicación debe tratar este módulo como protección activa hasta integrar y verificar un adaptador de servidor real.
+
+## Memoria personal local en clientes Android
+
+El contrato de seguridad para la memoria personal local, su cifrado, separación por cuenta, consentimiento y pruebas pendientes está en [docs/LOCAL-MEMORY-CLIENT-SECURITY.md](docs/LOCAL-MEMORY-CLIENT-SECURITY.md). La memoria local no sustituye las RPCs de memoria cloud ni concede identidad o privilegios offline.
