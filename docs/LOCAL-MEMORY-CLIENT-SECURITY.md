@@ -34,8 +34,8 @@ Android Keystore may be hardware-backed when supported by the device. NOVA must 
 5. An explicit user instruction to remember a fact is a direct confirmation and may write to the local store.
 6. Local records are not automatically uploaded or synchronized.
 7. The client forces the legacy cloud automatic-memory flag off when it updates cloud preferences. Existing cloud memory remains a separate service and is not silently migrated.
-9. Cloud memories may enter the local model prompt only while the account's `personal_memory_enabled` preference is true. Disabling that preference must clear the in-memory cloud-memory cache; local device memories remain independent.
-8. Sensitive memory must not be inferred or saved by this standard local store. Credential, contact, and financial-identifier rejection currently uses a basic client-side heuristic; it is not a complete data-classification system.
+8. Cloud memories may enter the local model prompt only while the account's `personal_memory_enabled` preference is true. Disabling that preference must clear the in-memory cloud-memory cache; local device memories remain independent.
+9. Sensitive memory must not be inferred or saved by this standard local store. Credential, contact, and financial-identifier rejection currently uses a basic client-side heuristic; it is not a complete data-classification system.
 
 Credentials, API keys, authentication tokens, payment card data, and recovery codes belong in the dedicated password/secret vault, not personal memory. Biometric templates, health data, government identifiers, and other high-sensitivity records require a separate consent and protection design before any storage feature is implemented.
 
