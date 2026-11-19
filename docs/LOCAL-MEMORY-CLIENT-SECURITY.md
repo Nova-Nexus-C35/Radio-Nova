@@ -71,3 +71,15 @@ The first implementation is in Nova IA PR #48. It adds account-scoped AES-GCM st
 - Decide how local deletion interacts with a matching cloud record without silently syncing or retaining a forgotten value in model context.
 - Review cloud-memory migration and opt-in sync separately; do not add a new provider or billable service.
 - Re-run license, dependency, and security review before adding SQLCipher/Room or any third-party storage library.
+
+## Account-scoped conversation history — implementation update 2026-11-19
+
+The Nova IA PR #48 client review found that personal memory was already account-scoped, but encrypted local chat history and the cloud conversation identifier still used installation-wide storage. This could expose one account's conversation context after another account signs in on the same device.
+
+The Nova IA PR now changes the local chat store to require the authenticated account ID, derives separate preference namespaces and Android Keystore aliases per account, binds AES-GCM ciphertext to the account-specific alias as AAD, and fails closed if the account key is missing. MainActivity passes the session-derived account ID for history reads, writes, and deletion. Cloud conversation IDs now use a separate account-derived namespace.
+
+The legacy encrypted chat store and plaintext migration store are migrated only once to the first authenticated account that opens the history. Legacy data is removed only after the new encrypted write commits. Since the previous global cloud conversation ID has no reliable account attribution, it is intentionally not migrated or reused.
+
+Static source review and post-write GitHub rereads were completed. The Android manifest has allowBackup=false. Gradle/JUnit, Keystore migration, two-account instrumentation, account-switch and real-device offline tests have not been run; this update is not a production security certification.
+
+Residual migration risk: the previous global local history did not record its owner. Assigning it to the first authenticated account is a compatibility choice, not proof of historical ownership. This must be disclosed to the owner and verified during Android migration testing.
