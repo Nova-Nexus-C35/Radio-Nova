@@ -21,6 +21,7 @@ The initial Android implementation uses:
 - A separate encrypted store from conversation history, with a maximum of 100 records.
 - Metadata for category, key, value, source type, creation time, update time, and explicit confirmation time.
 - A fail-closed read path: decryption errors preserve the ciphertext and surface an error rather than replacing it with an empty store.
+- A missing account key is not regenerated during decryption. The read fails closed, preserving the ciphertext and avoiding a replacement key that could mask permanent data loss.
 
 Android Keystore may be hardware-backed when supported by the device. NOVA must not claim hardware backing on every Android device. The store is not recoverable if the app is uninstalled, the device is reset, or the Keystore key is lost; an encrypted export/restore design is still required. Never regenerate a missing key and overwrite ciphertext after a decryption failure.
 
@@ -33,6 +34,7 @@ Android Keystore may be hardware-backed when supported by the device. NOVA must 
 5. An explicit user instruction to remember a fact is a direct confirmation and may write to the local store.
 6. Local records are not automatically uploaded or synchronized.
 7. The client forces the legacy cloud automatic-memory flag off when it updates cloud preferences. Existing cloud memory remains a separate service and is not silently migrated.
+9. Cloud memories may enter the local model prompt only while the account's `personal_memory_enabled` preference is true. Disabling that preference must clear the in-memory cloud-memory cache; local device memories remain independent.
 8. Sensitive memory must not be inferred or saved by this standard local store. Credential, contact, and financial-identifier rejection currently uses a basic client-side heuristic; it is not a complete data-classification system.
 
 Credentials, API keys, authentication tokens, payment card data, and recovery codes belong in the dedicated password/secret vault, not personal memory. Biometric templates, health data, government identifiers, and other high-sensitivity records require a separate consent and protection design before any storage feature is implemented.
@@ -55,7 +57,7 @@ The client must provide controls to inspect records, forget an individual record
 The first implementation is in Nova IA PR #48. It adds account-scoped AES-GCM storage, explicit confirmation, local suggestion controls, and individual/full deletion. A basic privacy filter rejects common credential terms, email addresses, phone-like digit sequences, and long identifiers.
 
 - Standalone Kotlin checks with `kotlinc` passed for extractor and privacy-filter cases.
-- JUnit tests were added but have not yet been executed through Gradle.
+- JUnit regression tests were added. The extractor and privacy filter were also compiled and exercised with standalone `kotlinc`; all nine privacy cases passed. JUnit/Gradle and Android integration tests remain unexecuted because the branch has no Gradle wrapper and this environment has no Android SDK.
 - Android Gradle compilation, Android Keystore behavior, account-switch instrumentation, UI tests, and real-device offline tests remain pending.
 - This document is a security contract and review record, not a claim that the full client integration is production-ready.
 
