@@ -40,3 +40,8 @@ La recepción terrestre de emisoras cubanas sin Internet sigue pendiente. Requie
 
 - [Nova Workspace — almacenamiento e índice de transición](https://github.com/Nova-Nexus-C35/Nova-Workspace/blob/main/ECOSYSTEM-TRANSITION-INDEX.md)
 - [Nova Nexus — administración del ecosistema](https://github.com/Nova-Nexus-C35/Nova-Nexus)
+
+
+## Bloqueo de compilación observado — 2026-11-23
+
+El proyecto no incluye `gradle/wrapper/gradle-wrapper.jar` ni se encontró un workflow de Android build activo. El código y las pruebas se transfirieron, pero no se afirma que el APK compile hasta restaurar un mecanismo reproducible de Gradle y ejecutar build/test en CI. La recepción FM/AM offline sigue siendo una función pendiente independiente.
