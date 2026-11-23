@@ -9,7 +9,7 @@
   "files": [
     {
       "source_path": "Projects/Applications/radio-nova/README.md",
-      "destination_path": "README.md",
+      "destination_path": "docs/UPSTREAM-README-SANITIZED.md",
       "source_blob_sha": "58f63cfcef145928967f92a1614c11dceaa6ab87",
       "content_sanitized": true
     },
