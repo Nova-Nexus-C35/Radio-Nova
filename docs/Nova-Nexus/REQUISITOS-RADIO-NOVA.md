@@ -22,3 +22,10 @@ Este documento conserva únicamente requisitos de Radio Nova. Se detectó que un
 
 - [Nova Workspace — índice maestro](https://github.com/Nova-Nexus-C35/Nova-Workspace/blob/main/ECOSYSTEM-TRANSITION-INDEX.md)
 - [Nova Nexus — administración](https://github.com/Nova-Nexus-C35/Nova-Nexus)
+
+
+## Código fuente recuperado — 2026-11-23
+
+Se importaron 29 archivos de la implementación Android que estaba conservada en `Nova-Workspace/Projects/Applications/radio-nova/`. La aplicación existente prioriza streaming online y reproducción multimedia; no debe confundirse con la recepción FM terrestre offline que constituye el objetivo original. La recepción integrada/USB sigue pendiente de compatibilidad y pruebas por dispositivo.
+
+El README upstream se preservó sin su sección de contacto en `docs/UPSTREAM-README-SANITIZED.md`. El manifiesto `SOURCE-TRANSFER-MANIFEST.json` registra procedencia y SHA. La importación no demuestra que el build Gradle haya sido ejecutado en este repositorio.

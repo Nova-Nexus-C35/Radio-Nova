@@ -1,0 +1,185 @@
+{
+  "schema_version": "1.0",
+  "source_workspace": "Nova-Nexus-C35/Nova-Workspace",
+  "source_prefix": "Projects/Applications/radio-nova/",
+  "imported_count": 29,
+  "source_commit": "Nova-Workspace main snapshot (2026-11-23)",
+  "secrets_included": false,
+  "contact_section_removed_from_upstream_readme": true,
+  "files": [
+    {
+      "source_path": "Projects/Applications/radio-nova/README.md",
+      "destination_path": "README.md",
+      "source_blob_sha": "58f63cfcef145928967f92a1614c11dceaa6ab87",
+      "content_sanitized": true
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/ESTADO-DESARROLLO.md",
+      "destination_path": "ESTADO-DESARROLLO.md",
+      "source_blob_sha": "4f0ece63b81e859fbc909c3596782f02240242b7",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/REFERENCIAS-GITHUB.md",
+      "destination_path": "REFERENCIAS-GITHUB.md",
+      "source_blob_sha": "e0a40d6d73b019857d8935770bdbf5a366ff4f1b",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/COMPATIBILIDAD-USB.md",
+      "destination_path": "COMPATIBILIDAD-USB.md",
+      "source_blob_sha": "f632ad638c1bb255364f6f3a01af04884d08dd63",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/THIRD-PARTY-NOTICES.md",
+      "destination_path": "THIRD-PARTY-NOTICES.md",
+      "source_blob_sha": "3f7f16aac6c655f218d440aacb58759ddd238ff7",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/PLAN-STREAMING-ONLINE.md",
+      "destination_path": "PLAN-STREAMING-ONLINE.md",
+      "source_blob_sha": "a4c46e2b83f725da7de0116b87f107feac14057c",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/app/src/main/java/com/nova/radio/Station.java",
+      "destination_path": "app/src/main/java/com/nova/radio/Station.java",
+      "source_blob_sha": "fa5d2d09bbaa6fc765594ec6d5beead5f0eddc7c",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/app/src/main/java/com/nova/radio/RadioSource.java",
+      "destination_path": "app/src/main/java/com/nova/radio/RadioSource.java",
+      "source_blob_sha": "0a97979625b4b094fa27d3df5b619bc35b55cf34",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/app/src/main/java/com/nova/radio/MainActivity.java",
+      "destination_path": "app/src/main/java/com/nova/radio/MainActivity.java",
+      "source_blob_sha": "9ce0f2fdd1c43ed7fb7576ef0c5956ec5d76e36c",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/app/src/main/java/com/nova/radio/StationStore.java",
+      "destination_path": "app/src/main/java/com/nova/radio/StationStore.java",
+      "source_blob_sha": "96aad2b8d2dd7f2b286b630688f599cfd732089f",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/app/src/main/java/com/nova/radio/OnlineStation.java",
+      "destination_path": "app/src/main/java/com/nova/radio/OnlineStation.java",
+      "source_blob_sha": "e39cb0d57b407a3759992eade01f966075c84971",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/app/src/main/java/com/nova/radio/StationBackup.java",
+      "destination_path": "app/src/main/java/com/nova/radio/StationBackup.java",
+      "source_blob_sha": "bf45d0bcabfcf26c7e7a8d1d3c56549a81194509",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/app/src/main/java/com/nova/radio/StationDirectory.java",
+      "destination_path": "app/src/main/java/com/nova/radio/StationDirectory.java",
+      "source_blob_sha": "8aecdc3c53a2058b9accf2c6d83a955bcfb26757",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/app/src/main/java/com/nova/radio/M3uPlaylistParser.java",
+      "destination_path": "app/src/main/java/com/nova/radio/M3uPlaylistParser.java",
+      "source_blob_sha": "85225e992c6178ec003fc6f70c6270b49f3eb50d",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/app/src/main/java/com/nova/radio/NovaLoginActivity.java",
+      "destination_path": "app/src/main/java/com/nova/radio/NovaLoginActivity.java",
+      "source_blob_sha": "ea058044d8b317617cd998bcdca8ad917d007c3f",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/app/src/main/java/com/nova/radio/StreamUrlValidator.java",
+      "destination_path": "app/src/main/java/com/nova/radio/StreamUrlValidator.java",
+      "source_blob_sha": "5c8e00a3d22f49a6517149fee9d685a9a749bbe3",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/app/src/main/java/com/nova/radio/RadioBrowserClient.java",
+      "destination_path": "app/src/main/java/com/nova/radio/RadioBrowserClient.java",
+      "source_blob_sha": "572b3592ed5d02043b309422e56ded161294a7ab",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/app/src/main/java/com/nova/radio/NovaAccountSession.java",
+      "destination_path": "app/src/main/java/com/nova/radio/NovaAccountSession.java",
+      "source_blob_sha": "a493e47b42fc2e1df06d32b3ac94e20bc1805982",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/app/src/main/java/com/nova/radio/OnlineStreamSource.java",
+      "destination_path": "app/src/main/java/com/nova/radio/OnlineStreamSource.java",
+      "source_blob_sha": "d169c284b9d11bd79804da26e47efd3e6abad3c1",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/app/src/main/java/com/nova/radio/InternetRadioService.java",
+      "destination_path": "app/src/main/java/com/nova/radio/InternetRadioService.java",
+      "source_blob_sha": "97de34c4b552f1b788c037154eb3c5c220b8ca34",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/build.gradle",
+      "destination_path": "build.gradle",
+      "source_blob_sha": "5b7ccba7c566afb5057eaea1b10b99b083851fe4",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/settings.gradle",
+      "destination_path": "settings.gradle",
+      "source_blob_sha": "57b35ca296a31639f5cfd81388caf996cab2b02d",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/app/build.gradle",
+      "destination_path": "app/build.gradle",
+      "source_blob_sha": "c33fbe6d6914e5f4e3091e7a597321f39a2c27e2",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/gradle.properties",
+      "destination_path": "gradle.properties",
+      "source_blob_sha": "3c5e11311bd5f328c2ef0eef1cf06eda2eaf7eae",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/app/src/main/AndroidManifest.xml",
+      "destination_path": "app/src/main/AndroidManifest.xml",
+      "source_blob_sha": "843b3c10d948247e0ea1e4da787d9b9c04f03cfd",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/app/src/main/res/xml/automotive_app_desc.xml",
+      "destination_path": "app/src/main/res/xml/automotive_app_desc.xml",
+      "source_blob_sha": "01588865313035b573b2bae35b31805415c51faa",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/app/src/test/java/com/nova/radio/M3uPlaylistParserTest.java",
+      "destination_path": "app/src/test/java/com/nova/radio/M3uPlaylistParserTest.java",
+      "source_blob_sha": "ab11fc4b3d8184f48e9187f2534711a43b5ae936",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/app/src/test/java/com/nova/radio/StreamUrlValidatorTest.java",
+      "destination_path": "app/src/test/java/com/nova/radio/StreamUrlValidatorTest.java",
+      "source_blob_sha": "d5f98d17446cbbabe3a64ae1f1e4d526dc613ec9",
+      "content_sanitized": false
+    },
+    {
+      "source_path": "Projects/Applications/radio-nova/app/src/test/java/com/nova/radio/RadioBrowserCountryNormalizationTest.java",
+      "destination_path": "app/src/test/java/com/nova/radio/RadioBrowserCountryNormalizationTest.java",
+      "source_blob_sha": "ea1da7949e9b155374dcaa5bf044952409db8a18",
+      "content_sanitized": false
+    }
+  ]
+}

@@ -1,24 +1,42 @@
 # Radio Nova
 
-Repositorio propietario de Radio Nova.
+Aplicación Android de radio del ecosistema NOVA. El código fuente y las pruebas de esta aplicación pertenecen a este repositorio.
 
-## Objetivo confirmado
+## Fuente importada
 
-Aplicación para sintonizar emisoras de radio cubanas sin Internet cuando el dispositivo disponga de receptor FM compatible y el fabricante permita el acceso a ese hardware. La aplicación no puede crear recepción FM por software si el hardware no existe o el sistema lo bloquea.
+Se transfirieron 29 archivos desde `Nova-Workspace/Projects/Applications/radio-nova/`, incluyendo Gradle, manifiesto Android, clases Java, pruebas unitarias y documentación. El README de origen se preservó en `docs/UPSTREAM-README-SANITIZED.md`; se retiró su sección de contacto para no publicar datos personales. Los SHA de origen están en `SOURCE-TRANSFER-MANIFEST.json`.
 
-## Requisitos y validaciones pendientes
+## Estado funcional observado en el código
 
-- Identificar los teléfonos Android objetivo y comprobar receptor FM, API y restricciones del fabricante.
-- Diseñar una capa de compatibilidad por dispositivo.
-- Separar recepción FM real de streaming por Internet; el streaming no cumple el requisito offline.
-- Añadir catálogo de emisoras, controles de sintonía, favoritos y persistencia local.
-- Probar en hardware real antes de afirmar que funciona sin Internet.
+- Android nativo, Java 17, Media3 1.11.1.
+- Streaming de emisoras por Internet, reproducción en segundo plano y controles multimedia.
+- Búsqueda mundial mediante Radio Browser, filtros y caché local de resultados.
+- Favoritos y últimas emisoras guardados localmente.
+- Importación/exportación M3U/M3U8 y copias JSON.
+- Temporizador de apagado, reconexión limitada, selección de calidad cuando el stream ofrece variantes y ecualizador cuando el dispositivo lo soporta.
+- Acceso NOVA para funciones de Internet; las funciones locales de favoritos y archivos no requieren cuenta.
 
-## Estado actual
+## Objetivo offline y limitaciones de hardware
 
-La documentación de requisitos está registrada en `docs/Nova-Nexus/REQUISITOS-RADIO-NOVA.md`. El repositorio es pequeño y la reconstrucción de la aplicación, integración de hardware y pruebas en dispositivos están pendientes.
+La recepción terrestre de emisoras cubanas sin Internet sigue pendiente. Requiere un receptor FM/AM compatible y un controlador/API soportado por el fabricante o un receptor USB OTG con protocolo identificado. El código actual documenta la abstracción y el catálogo de compatibilidad, pero no acredita recepción FM real en un teléfono concreto. No prometer funcionamiento offline de FM/AM hasta probarlo en hardware.
 
-## Referencias
+## Seguridad y privacidad
 
-- [Nova Workspace — índice maestro](https://github.com/Nova-Nexus-C35/Nova-Workspace/blob/main/ECOSYSTEM-TRANSITION-INDEX.md)
-- [Nova Nexus — administración](https://github.com/Nova-Nexus-C35/Nova-Nexus)
+- Streaming y búsqueda online requieren Internet.
+- Favoritos, recientes, M3U y respaldo local se almacenan en el dispositivo.
+- No se guardan tokens ni contraseñas en archivos de respaldo.
+- No se debe recopilar ubicación continuamente ni transmitir historial de escucha sin consentimiento.
+- No importar firmware o drivers propietarios sin licencia y autorización.
+
+## Validación pendiente
+
+1. Ejecutar pruebas Gradle y compilar APK debug.
+2. Probar streaming, MediaLibraryService, notificaciones y reconexión en Android 9+.
+3. Probar multitarea, permisos y consumo de batería.
+4. Probar receptor FM/AM y USB OTG en dispositivos identificados; registrar matriz real de compatibilidad.
+5. No declarar Radio Nova finalizada hasta validar recepción terrestre offline si sigue siendo requisito de aceptación.
+
+## Ubicación en NOVA
+
+- [Nova Workspace — almacenamiento e índice de transición](https://github.com/Nova-Nexus-C35/Nova-Workspace/blob/main/ECOSYSTEM-TRANSITION-INDEX.md)
+- [Nova Nexus — administración del ecosistema](https://github.com/Nova-Nexus-C35/Nova-Nexus)
