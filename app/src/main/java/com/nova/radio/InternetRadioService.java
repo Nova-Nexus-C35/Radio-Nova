@@ -34,7 +34,6 @@ import com.google.common.util.concurrent.ListenableFuture;
  * Servicio de reproducción online.
  * Media3 administra la sesión, notificación y controles del sistema.
  */
-@androidx.media3.common.util.UnstableApi
 @UnstableApi
 public final class InternetRadioService extends MediaLibraryService {
     public static final String ACTION_PLAY = "com.nova.radio.action.PLAY";
