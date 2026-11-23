@@ -44,4 +44,4 @@ La recepción terrestre de emisoras cubanas sin Internet sigue pendiente. Requie
 
 ## Bloqueo de compilación observado — 2026-11-23
 
-El proyecto no incluye `gradle/wrapper/gradle-wrapper.jar` ni se encontró un workflow de Android build activo. El código y las pruebas se transfirieron, pero no se afirma que el APK compile hasta restaurar un mecanismo reproducible de Gradle y ejecutar build/test en CI. La recepción FM/AM offline sigue siendo una función pendiente independiente.
+El proyecto no incluye `gradle/wrapper/gradle-wrapper.jar`. Se añadió `.github/workflows/android-build.yml`, que instala Gradle 8.9 y Android SDK 35 sin depender del wrapper y ejecuta pruebas unitarias y `assembleDebug`. La primera ejecución está en curso; no se declara compilación aprobada hasta que termine y se revise el resultado. La recepción FM/AM offline sigue siendo una función pendiente independiente.
